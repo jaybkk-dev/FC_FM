@@ -1,0 +1,2103 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>OSKAR BISTRO — Facilities (DEMO)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+
+    :root {
+      --brand: #E6A831;
+      --brand-dark: #C48A1A;
+      --brand-light: #FFF8E7;
+      --dark: #2D2D2D;
+      --gray: #888888;
+      --light-gray: #E0E0E0;
+      --white: #FFFFFF;
+      --bg: #E6A831;
+      --red: #C0392B;
+      --green: #27AE60;
+      --radius: 20px;
+      --card-pad: 24px;
+    }
+
+
+    html, body {
+      font-family: 'Prompt', sans-serif;
+      background: var(--bg);
+      color: var(--dark);
+      min-height: 100dvh;
+      overflow-x: hidden;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+
+    /* ============================== PAGES ============================== */
+    .page {
+      display: none;
+      flex-direction: column;
+      min-height: 100dvh;
+      padding: 20px 16px 24px;
+      animation: fadeIn 0.25s ease;
+    }
+    .page.active { display: flex; }
+    .page.scrollable {
+      min-height: auto;
+    }
+
+
+
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+
+
+
+    /* ============================== WHITE CARD ============================== */
+    .card {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: var(--card-pad);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .scrollable .card {
+      flex: none;
+    }
+
+
+
+
+    /* ============================== LOGO ============================== */
+    .logo-area {
+      text-align: center;
+      padding: 8px 0 16px;
+    }
+    .logo-area img {
+  max-width: 100%;
+  height: auto;
+  max-height: 72px;
+  object-fit: contain;
+   }
+    .logo-area.small img { height: 48px; }
+
+
+
+
+    /* ============================== PAGE TITLE ============================== */
+    .page-title {
+      text-align: center;
+      padding: 12px 0;
+      border-top: 3px solid var(--brand);
+      border-bottom: 3px solid var(--brand);
+      margin-bottom: 20px;
+    }
+    .page-title .en {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: var(--dark);
+    }
+    .page-title .th {
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--gray);
+      margin-top: 2px;
+    }
+
+
+
+
+    /* ============================== BACK BUTTON ============================== */
+    .back-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .back-btn {
+      background: none;
+      border: none;
+      font-size: 28px;
+      color: var(--dark);
+      cursor: pointer;
+      padding: 4px 8px 4px 0;
+      line-height: 1;
+    }
+    .back-row .author-tag {
+      margin-left: auto;
+      font-size: 13px;
+      color: var(--gray);
+    }
+    .back-row .author-tag strong { color: var(--dark); }
+
+
+
+
+    /* ============================== FORM ELEMENTS ============================== */
+    .form-group { margin-bottom: 18px; }
+
+
+
+
+    .form-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 8px;
+    }
+    .form-label .en {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--dark);
+    }
+    .form-label .th {
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--gray);
+    }
+
+
+
+
+    select, input[type="text"], textarea {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid var(--brand);
+      border-radius: 12px;
+      font-family: 'Prompt', sans-serif;
+      font-size: 16px;
+      color: var(--dark);
+      background: var(--white);
+      appearance: none;
+      -webkit-appearance: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    select:focus, input:focus, textarea:focus {
+      outline: none;
+      border-color: var(--brand-dark);
+      box-shadow: 0 0 0 3px rgba(230,168,49,0.2);
+    }
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23C48A1A' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 16px center;
+      padding-right: 40px;
+    }
+    textarea { resize: vertical; min-height: 100px; }
+
+
+
+
+    /* ============================== JOB TYPE BUTTONS ============================== */
+    .job-type-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .job-type-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 12px;
+      border: 3px solid var(--brand);
+      border-radius: 16px;
+      background: var(--white);
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+    .job-type-btn .icon { font-size: 40px; margin-bottom: 10px; }
+    .job-type-btn .label-en { font-size: 15px; font-weight: 700; color: var(--dark); }
+    .job-type-btn .label-th { font-size: 13px; font-weight: 400; color: var(--gray); margin-top: 2px; }
+    .job-type-btn.selected {
+      background: var(--brand-light);
+      border-color: var(--brand-dark);
+      box-shadow: 0 0 0 3px rgba(230,168,49,0.25);
+    }
+    .job-type-btn:active { transform: scale(0.97); }
+
+
+
+
+    /* ============================== MEDIA BUTTONS ============================== */
+    .media-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .media-btn {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 18px;
+      border: 2px solid var(--brand);
+      border-radius: 12px;
+      background: var(--white);
+      font-family: 'Prompt', sans-serif;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .media-btn:active { background: var(--brand-light); }
+    .media-btn .icon { font-size: 28px; flex-shrink: 0; }
+    .media-btn .text-col { display: flex; flex-direction: column; }
+    .media-btn .text-col .en { font-size: 15px; font-weight: 600; color: var(--dark); }
+    .media-btn .text-col .th { font-size: 13px; font-weight: 400; color: var(--gray); }
+    .media-btn.disabled {
+      border-color: var(--light-gray);
+      opacity: 0.5;
+      cursor: default;
+    }
+   .media-btn.recording {
+      border-color: var(--red);
+      background: #FFF0EE;
+    }
+    .rec-dot {
+      display: inline-block;
+      width: 12px; height: 12px;
+      background: var(--red);
+      border-radius: 50%;
+      animation: pulse 1s infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+
+
+
+    .file-list {
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .file-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      background: var(--brand-light);
+      border-radius: 10px;
+      font-size: 14px;
+    }
+    .file-item .file-icon { font-size: 18px; }
+    .file-item .file-name {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--dark);
+      font-weight: 500;
+    }
+    .file-item .file-remove {
+      background: none;
+      border: none;
+      font-size: 18px;
+      color: var(--gray);
+      cursor: pointer;
+      padding: 2px 6px;
+    }
+
+
+
+
+    /* ============================== BUTTONS ============================== */
+    .btn-primary {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 12px;
+      background: var(--brand);
+      color: var(--white);
+      font-family: 'Prompt', sans-serif;
+      font-size: 17px;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.5px;
+      transition: all 0.2s;
+      margin-top: 12px;
+    }
+    .btn-primary:active { transform: scale(0.98); background: var(--brand-dark); }
+    .btn-primary:disabled {
+      background: var(--light-gray);
+      color: #AAA;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+
+
+
+    .btn-secondary {
+      width: 100%;
+      padding: 14px;
+      border: 2px solid var(--brand);
+      border-radius: 12px;
+      background: var(--white);
+      color: var(--dark);
+      font-family: 'Prompt', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-secondary:active { transform: scale(0.98); background: var(--brand-light); }
+
+
+
+
+    /* ============================== UNDER CONSTRUCTION ============================== */
+    .construction-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: 12px;
+      padding: 40px 20px;
+    }
+    .construction-content .big-icon { font-size: 64px; }
+    .construction-content .msg-en { font-size: 18px; font-weight: 700; color: var(--dark); }
+    .construction-content .msg-th { font-size: 15px; color: var(--gray); }
+
+
+
+
+    /* ============================== EVENT SUPPORT (2B) ============================== */
+    input[type="date"], input[type="time"] {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid var(--brand);
+      border-radius: 12px;
+      font-family: 'Prompt', sans-serif;
+      font-size: 16px;
+      color: var(--dark);
+      background: var(--white);
+      -webkit-appearance: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    input[type="date"]:focus, input[type="time"]:focus {
+      outline: none;
+      border-color: var(--brand-dark);
+      box-shadow: 0 0 0 3px rgba(230,168,49,0.2);
+    }
+    .datetime-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .date-block-message {
+      display: none;
+      margin-top: 12px;
+      padding: 18px;
+      border-radius: 12px;
+      background: #FFF0F0;
+      border: 2px solid var(--red);
+      text-align: center;
+    }
+    .date-block-message.active { display: block; }
+    .date-block-message .block-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--red);
+      margin-bottom: 8px;
+    }
+    .date-block-message .block-text {
+      font-size: 13px;
+      color: var(--dark);
+      margin-bottom: 14px;
+      line-height: 1.5;
+    }
+    .date-block-message .block-email {
+      display: inline-block;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-family: 'Prompt', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--white);
+      background: var(--red);
+      text-decoration: none;
+      margin-bottom: 10px;
+    }
+    .date-block-message .block-home {
+      display: block;
+      margin-top: 8px;
+      font-size: 13px;
+      color: var(--brand-dark);
+      text-decoration: underline;
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-family: 'Prompt', sans-serif;
+    }
+    .file-upload-zone {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      border: 2px dashed var(--brand);
+      border-radius: 12px;
+      background: var(--brand-light);
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+    .file-upload-zone:active { background: var(--white); }
+    .file-upload-zone .upload-icon { font-size: 28px; margin-bottom: 6px; }
+    .file-upload-zone .upload-en { font-size: 14px; font-weight: 600; color: var(--dark); }
+    .file-upload-zone .upload-th { font-size: 12px; color: var(--gray); }
+
+
+
+
+    /* ============================== CONFIRMATION ============================== */
+    .confirm-top {
+      text-align: center;
+      padding: 16px 0;
+    }
+    .confirm-top .check-circle {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: var(--green);
+      color: white;
+      font-size: 36px;
+      line-height: 72px;
+      text-align: center;
+      margin: 0 auto 14px;
+      animation: popIn 0.4s ease;
+    }
+    @keyframes popIn {
+      0% { transform: scale(0); }
+      70% { transform: scale(1.15); }
+      100% { transform: scale(1); }
+    }
+    .confirm-top .en { font-size: 22px; font-weight: 700; }
+    .confirm-top .th { font-size: 15px; color: var(--gray); margin-top: 4px; }
+
+
+
+
+    .card-frame {
+      margin: 16px 0;
+      display: flex;
+      justify-content: center;
+    }
+    .card-frame canvas {
+      width: 100%;
+      max-width: 360px;
+      height: auto;
+      border-radius: 12px;
+    }
+
+
+
+
+    .action-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 8px 0;
+    }
+    .action-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      font-family: 'Prompt', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .action-btn.share { background: var(--brand); color: white; }
+    .action-btn.save { background: var(--white); color: var(--dark); border: 2px solid var(--brand); }
+    .action-btn:active { transform: scale(0.97); }
+
+
+
+
+    .new-link {
+      display: block;
+      text-align: center;
+      padding: 14px;
+      font-size: 15px;
+      color: var(--brand-dark);
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+
+
+
+    /* ============================== MISC ============================== */
+    .hint {
+      font-size: 13px;
+      color: var(--gray);
+      margin-top: 4px;
+      font-style: italic;
+    }
+
+
+
+
+    .loading-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(230,168,49,0.9);
+      z-index: 100;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+    .loading-overlay.active { display: flex; }
+    .spinner {
+      width: 44px;
+      height: 44px;
+      border: 5px solid rgba(255,255,255,0.3);
+      border-top-color: var(--white);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-overlay .msg { font-size: 16px; font-weight: 600; color: var(--white); }
+
+
+
+
+    .init-loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100dvh;
+      gap: 16px;
+    }
+    .init-loading .msg { font-size: 16px; font-weight: 600; color: var(--white); }
+
+
+    /* ============================== TIME PICKER ============================== */
+    .time-display {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid var(--brand);
+      border-radius: 12px;
+      font-family: 'Prompt', sans-serif;
+      font-size: 16px;
+      color: var(--dark);
+      background: var(--white);
+      cursor: pointer;
+      text-align: center;
+      font-weight: 600;
+    }
+    .time-picker-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 50;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .time-picker-overlay.active { display: flex; }
+    .time-picker-sheet {
+      background: var(--white);
+      border-radius: 20px 20px 0 0;
+      padding: 24px;
+      width: 100%;
+      max-width: 400px;
+      animation: slideUp 0.25s ease;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+    .time-picker-header {
+      text-align: center;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 16px;
+    }
+    .time-picker-columns {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .time-col {
+      width: 80px;
+      height: 200px;
+      overflow-y: auto;
+      border-radius: 12px;
+      background: var(--brand-light);
+      -webkit-overflow-scrolling: touch;
+    }
+    .time-col::-webkit-scrollbar { display: none; }
+    .time-col-separator {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--dark);
+    }
+    .time-item {
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 500;
+      color: var(--gray);
+      cursor: pointer;
+      transition: all 0.15s;
+      border-radius: 8px;
+      margin: 2px 4px;
+    }
+    .time-item.selected {
+      background: var(--brand);
+      color: var(--white);
+      font-weight: 700;
+      font-size: 22px;
+    }
+    .time-item:active { transform: scale(0.95); }
+
+
+    .spacer { flex: 1; }
+    .gap-12 { height: 12px; }
+    .gap-8 { height: 8px; }
+  </style>
+</head>
+<body>
+
+<!-- DESKTOP BLOCK SCREEN -->
+<div id="desktopBlock" style="display:none;position:fixed;inset:0;z-index:99999;background:#E6A831;font-family:'Prompt',sans-serif;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px;">
+  <div style="font-size:72px;margin-bottom:24px;">📱</div>
+  <div style="font-size:28px;font-weight:700;color:#2D2D2D;margin-bottom:12px;">Mobile Only</div>
+  <div style="font-size:16px;color:#2D2D2D;max-width:400px;line-height:1.6;">
+    This app is designed for mobile devices.<br>
+    Please open this file on your phone.<br><br>
+    <span style="font-size:14px;color:#555;">แอปนี้ออกแบบมาสำหรับมือถือ<br>กรุณาเปิดไฟล์นี้บนโทรศัพท์ของคุณ</span>
+  </div>
+</div>
+<script>
+  (function() {
+    var isMobile = /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+                   || (navigator.maxTouchPoints > 1 && window.innerWidth < 1024);
+    if (!isMobile) {
+      document.getElementById('desktopBlock').style.display = 'flex';
+    }
+  })();
+</script>
+
+<!-- DEMO BANNER -->
+<div style="position:fixed;top:0;left:0;right:0;z-index:9999;background:#C0392B;color:#fff;text-align:center;padding:6px 12px;font-size:13px;font-weight:600;font-family:'Prompt',sans-serif;letter-spacing:0.5px;">
+  DEMO MODE — No data is saved or collected
+</div>
+<div style="height:32px;"></div>
+
+<!-- INIT LOADING -->
+<div id="initLoading" class="init-loading">
+  <div class="spinner"></div>
+  <div class="msg">Loading / กำลังโหลด...</div>
+</div>
+
+
+
+
+<!-- PAGE 1 -->
+<div id="page1" class="page">
+  <div class="card">
+    <div class="logo-area">
+      <img class="app-logo" src="" alt="OSKAR BISTRO">
+    </div>
+    <div class="page-title">
+      <div class="en">REQUEST</div>
+      <div class="th">แจ้งซ่อม / สนับสนุน</div>
+    </div>
+    <div class="form-group">
+      <div class="form-label">
+        <span class="en">YOUR NAME</span>
+        <span class="th">ชื่อของคุณ</span>
+      </div>
+      <select id="staffName">
+        <option value="">— Select / เลือก —</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <div class="form-label">
+        <span class="en">JOB TYPE</span>
+        <span class="th">ประเภทงาน</span>
+      </div>
+      <div class="job-type-grid">
+        <div class="job-type-btn" data-type="MAINTENANCE" onclick="selectJobType(this)">
+          <div class="icon">🔧</div>
+          <div class="label-en">MAINTENANCE</div>
+          <div class="label-th">ซ่อมบำรุง</div>
+        </div>
+        <div class="job-type-btn" data-type="EVENT SUPPORT" onclick="selectJobType(this)">
+          <div class="icon">🎪</div>
+          <div class="label-en">EVENT SUPPORT</div>
+          <div class="label-th">สนับสนุนอีเว้นท์</div>
+        </div>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <button id="btnNext" class="btn-primary" disabled onclick="goToPage2()">NEXT / ถัดไป</button>
+  </div>
+</div>
+
+
+
+
+<!-- PAGE 2A -->
+<div id="page2a" class="page scrollable">
+  <div class="card">
+    <div class="back-row">
+      <button class="back-btn" onclick="goBack()">&larr;</button>
+      <img class="app-logo" src="" alt="OSKAR" style="height:40px;margin:0 auto;">
+      <span class="author-tag">by <strong id="authorDisplay"></strong></span>
+    </div>
+    <div class="page-title">
+      <div class="en">MAINTENANCE</div>
+      <div class="th">ซ่อมบำรุง</div>
+    </div>
+    <div class="form-group">
+      <div class="form-label"><span class="en">AREA</span><span class="th">พื้นที่</span></div>
+      <select id="areaSelect"><option value="">— Select area / เลือกพื้นที่ —</option></select>
+    </div>
+    <div class="form-group">
+      <div class="form-label"><span class="en">ISSUE TITLE *</span><span class="th">หัวข้อ *</span></div>
+      <input type="text" id="issueTitle" placeholder="e.g. AC not working / แอร์ไม่เย็น" oninput="validateForm()">
+    </div>
+    <div class="form-group">
+      <div class="form-label"><span class="en">DETAILS</span><span class="th">รายละเอียด</span></div>
+      <textarea id="issueDetails" placeholder="Describe the issue / อธิบายปัญหา" oninput="validateForm()"></textarea>
+    </div>
+    <div class="form-group">
+      <div class="form-label"><span class="en">ATTACHMENTS</span><span class="th">แนบไฟล์</span></div>
+      <div class="media-stack">
+        <label class="media-btn" for="fileInput">
+          <span class="icon">📷</span>
+          <div class="text-col"><span class="en">Take Photo / Video</span><span class="th">ถ่ายรูป / วิดีโอ</span></div>
+        </label>
+        <label class="media-btn" for="cameraInput">
+          <span class="icon">📎</span>
+          <div class="text-col"><span class="en">Upload File</span><span class="th">อัพโหลดไฟล์</span></div>
+        </label>
+       <label class="media-btn" for="voiceInput">
+  <span class="icon">🎙️</span>
+  <div class="text-col">
+    <span class="en">Voice Note</span>
+    <span class="th">บันทึกเสียง</span>
+  </div>
+</label>
+
+
+        </div>
+      </div>
+      <div class="file-list" id="fileList"></div>
+    </div>
+    <input type="file" id="cameraInput" accept="image/*,video/*" capture="environment" style="display:none" onchange="handleFiles(this)">
+    <input type="file" id="fileInput" accept="image/*,video/*,.pdf" multiple style="display:none" onchange="handleFiles(this)">
+    <input type="file" id="voiceInput" accept="audio/*" capture="user" style="display:none" onchange="handleFiles(this)">
+    <div class="hint">* Title + at least one detail or attachment / หัวข้อ + รายละเอียดหรือแนบไฟล์</div>
+    <div class="gap-8"></div>
+    <button id="btnSubmit" class="btn-primary" disabled onclick="submitForm()">SUBMIT / ส่งคำขอ</button>
+  </div>
+</div>
+
+
+
+
+<!-- PAGE 2B -->
+<div id="page2b" class="page scrollable">
+  <div class="card">
+    <div class="back-row">
+      <button class="back-btn" onclick="goBack()">&larr;</button>
+      <img class="app-logo" src="" alt="" style="height:40px;margin:0 auto;">
+      <span class="author-tag">by <strong id="authorDisplay2b"></strong></span>
+    </div>
+    <div class="page-title">
+      <div class="en">EVENT SUPPORT</div>
+      <div class="th">สนับสนุนอีเว้นท์</div>
+    </div>
+    <div class="form-group">
+      <div class="form-label"><span class="en">EVENT NAME *</span><span class="th">ชื่องาน *</span></div>
+      <input type="text" id="eventName" placeholder="e.g. Wine Dinner, NYE Party" oninput="checkEventReady()">
+    </div>
+    <div class="form-group">
+      <div class="form-label"><span class="en">DATE &amp; TIME *</span><span class="th">วันที่และเวลา *</span></div>
+      <div class="datetime-row">
+        <input type="date" id="eventDate" onchange="checkEventDate(); checkEventReady();">
+        <div class="time-display" id="timeDisplay" onclick="openTimePicker()">18:00</div>
+        <input type="hidden" id="eventTime" value="18:00">
+
+
+      </div>
+      <div id="dateBlockMsg" class="date-block-message">
+        <div class="block-title">⚠️ REQUEST CANNOT BE PROCESSED</div>
+        <div class="block-text">
+          Events less than 5 days away cannot be submitted through this form.<br>
+          อีเว้นท์ที่เหลือน้อยกว่า 5 วันไม่สามารถส่งผ่านแบบฟอร์มนี้ได้
+        </div>
+        <a href="mailto:fm@fatchiligroup.com" class="block-email">✉️ EMAIL fm@fatchiligroup.com</a>
+        <button class="block-home" onclick="resetApp()">← Submit another request / ส่งคำขอใหม่</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="form-label"><span class="en">SUPPORT TYPE *</span><span class="th">ประเภทสนับสนุน *</span></div>
+      <select id="supportType" onchange="checkEventReady()">
+        <option value="">— Select / เลือก —</option>
+        <option value="TECHNICAL STANDBY">TECHNICAL STANDBY</option>
+        <option value="INSTALLATION">INSTALLATION</option>
+        <option value="REMOVAL">REMOVAL</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <div class="form-label"><span class="en">NOTES</span><span class="th">หมายเหตุ</span></div>
+      <textarea id="eventNotes" placeholder="Additional details / รายละเอียดเพิ่มเติม"></textarea>
+    </div>
+    <div class="form-group">
+      <div class="form-label"><span class="en">ATTACHMENTS</span><span class="th">แนบไฟล์</span></div>
+      <div class="media-stack">
+        <label class="media-btn" for="eventFileInput">
+          <span class="icon">📷</span>
+          <div class="text-col"><span class="en">Take Photo / Video</span><span class="th">ถ่ายรูป / วิดีโอ</span></div>
+        </label>
+        <label class="media-btn" for="eventCameraInput">
+          <span class="icon">📎</span>
+          <div class="text-col"><span class="en">Upload File</span><span class="th">อัพโหลดไฟล์</span></div>
+        </label>
+        <label class="media-btn" for="eventVoiceInput">
+          <span class="icon">🎙️</span>
+          <div class="text-col"><span class="en">Voice Note</span><span class="th">บันทึกเสียง</span></div>
+        </label>
+      </div>
+    </div>
+    <div class="file-list" id="eventFileList"></div>
+  </div>
+  <input type="file" id="eventCameraInput" accept="image/*,video/*" capture="environment" style="display:none" onchange="handleEventFiles(this)">
+  <input type="file" id="eventFileInput" accept="image/*,video/*,.pdf" multiple style="display:none" onchange="handleEventFiles(this)">
+  <input type="file" id="eventVoiceInput" accept="audio/*" capture="user" style="display:none" onchange="handleEventFiles(this)">
+  <div class="gap-8"></div>
+  <button id="btnSubmitEvent" class="btn-primary" disabled onclick="submitEvent()">SUBMIT / ส่งคำขอ</button>
+</div>
+
+
+
+
+<!-- PAGE 3 -->
+<div id="page3" class="page">
+  <div class="card">
+    <div class="confirm-top">
+      <div class="check-circle">✓</div>
+      <div class="en">Request Submitted!</div>
+      <div class="th">ส่งคำขอแล้ว!</div>
+    </div>
+    <div class="card-frame">
+      <canvas id="cardCanvas" width="1080" height="1080"></canvas>
+    </div>
+    <div class="action-row">
+      <button class="action-btn share" onclick="shareCard()">↗ SHARE / แชร์</button>
+      <button class="action-btn save" onclick="saveCard()">↓ SAVE / บันทึก</button>
+    </div>
+    <a class="new-link" onclick="resetApp()">Submit Another / ส่งคำขอใหม่</a>
+  </div>
+</div>
+
+
+<!-- TIME PICKER -->
+<div id="timePickerOverlay" class="time-picker-overlay" onclick="closeTimePicker()">
+  <div class="time-picker-sheet" onclick="event.stopPropagation()">
+    <div class="time-picker-header">SELECT TIME / เลือกเวลา</div>
+    <div class="time-picker-columns">
+      <div class="time-col" id="hourCol"></div>
+      <div class="time-col-separator">:</div>
+      <div class="time-col" id="minuteCol"></div>
+    </div>
+    <button class="btn-primary" onclick="confirmTime()" style="margin-top:0">DONE / ตกลง</button>
+  </div>
+</div>
+
+
+<!-- LOADING OVERLAY -->
+<div id="loadingOverlay" class="loading-overlay">
+  <div class="spinner"></div>
+  <div class="msg" id="loadingMsg">Submitting / กำลังส่ง...</div>
+</div>
+
+
+
+
+<script>
+  let venueConfig = null;
+  let selectedJobType = '';
+  let attachedFiles = [];
+  let submissionData = null;
+
+  // ========== DEMO MODE ==========
+  // Mock counter for generating sequential REQ_IDs
+  let mockReqCounter = 0;
+
+  function getMockConfig() {
+    return {
+      venueCode: "OSKB",
+      venueName: "OSKAR BISTRO",
+      bgHex: "#E6A831",
+      areas: ["KITCHEN","DINING ROOM","BAR","RESTROOMS","TERRACE","OFFICE","STORAGE","STAFF AREA"],
+      staffNames: ["Somchai","Krit","Noi","Ying","Joom","Prae","Bank","Tong","Fern"],
+      logoUrl: "https://lh3.googleusercontent.com/d/1uPDF4O34xITZa26wgvmCGB2lKlO_QqrF"
+    };
+  }
+
+  function getMockSubmitResult(data) {
+    mockReqCounter++;
+    const now = new Date();
+    const yy = String(now.getFullYear()).substring(2);
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const dd = String(now.getDate()).padStart(2, '0');
+    const hh = String(now.getHours()).padStart(2, '0');
+    const mi = String(now.getMinutes()).padStart(2, '0');
+    const ord = String(mockReqCounter).padStart(3, '0');
+    return {
+      success: true,
+      reqId: "OSKB" + yy + mm + dd + ord,
+      rowNum: 99,
+      folderId: "",
+      folderUrl: "",
+      folderName: "OSKB_" + yy + mm + dd + "_" + ord,
+      timestamp: dd + "/" + mm + "/20" + yy + " " + hh + ":" + mi,
+      venueName: "OSKAR BISTRO",
+      venueCode: "OSKB",
+      area: data.area || "",
+      title: (data.title || "").toUpperCase(),
+      details: (data.details || "").toLowerCase(),
+      detailsThai: "(คำแปลภาษาไทยจะแสดงที่นี่ / Thai translation appears here)",
+      author: data.author || "",
+      requestType: data.requestType || "MAINTENANCE",
+      assetId: data.assetId || "",
+      mediaCount: data.fileCount || 0
+    };
+  }
+  // ========== END DEMO MODE ==========
+
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // DEMO: use mock config instead of google.script.run
+    setTimeout(() => onConfigLoaded(getMockConfig()), 300);
+  });
+
+
+  function onConfigLoaded(config) {
+    venueConfig = config;
+    document.querySelectorAll('.app-logo').forEach(img => {
+      if (config.logoUrl) img.src = config.logoUrl;
+      else img.alt = config.venueName;
+    });
+    const sel = document.getElementById('staffName');
+    config.staffNames.forEach(name => {
+      const opt = document.createElement('option');
+      opt.value = name; opt.textContent = name;
+      sel.appendChild(opt);
+    });
+    const areaSel = document.getElementById('areaSelect');
+    config.areas.forEach(area => {
+      const opt = document.createElement('option');
+      opt.value = area; opt.textContent = area;
+      areaSel.appendChild(opt);
+    });
+    document.getElementById('initLoading').style.display = 'none';
+    var today = new Date();
+    var minDate = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+    document.getElementById('eventDate').setAttribute('min', minDate);
+    showPage('page1');
+  }
+
+
+
+
+  function onConfigError(err) {
+    document.getElementById('initLoading').innerHTML =
+      '<div style="text-align:center;padding:40px;"><div style="font-size:48px;margin-bottom:16px;">⚠️</div>' +
+      '<div style="font-size:18px;font-weight:700;color:#fff;">Failed to load</div>' +
+      '<div style="font-size:14px;color:rgba(255,255,255,0.7);margin-top:8px;">' + err.message + '</div></div>';
+  }
+
+
+
+
+  function showPage(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(id)?.classList.add('active');
+    window.scrollTo(0, 0);
+  }
+  function goBack() { showPage('page1'); }
+
+
+
+
+  document.getElementById('staffName').addEventListener('change', checkPage1);
+  function selectJobType(btn) {
+    document.querySelectorAll('.job-type-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedJobType = btn.dataset.type;
+    checkPage1();
+  }
+  function checkPage1() {
+    document.getElementById('btnNext').disabled = !(document.getElementById('staffName').value && selectedJobType);
+  }
+  function goToPage2() {
+    const name = document.getElementById('staffName').value;
+    if (!name || !selectedJobType) return;
+    if (selectedJobType === 'MAINTENANCE') {
+      document.getElementById('authorDisplay').textContent = name;
+      showPage('page2a');
+    } else {
+      document.getElementById('authorDisplay2b').textContent = name;
+      showPage('page2b');
+    }
+  }
+
+
+
+
+  function validateForm() {
+    const title = document.getElementById('issueTitle').value.trim();
+    const details = document.getElementById('issueDetails').value.trim();
+    document.getElementById('btnSubmit').disabled = !(title && (details || attachedFiles.length > 0));
+  }
+
+
+
+
+  const MAX_RAW_SIZE = 5 * 1024 * 1024; // 5 MB per file (before base64)
+
+
+
+
+  function handleFiles(input) {
+    if (!input.files || !input.files.length) return;
+    Array.from(input.files).forEach(file => {
+      if (attachedFiles.length >= 5) {
+        alert('Maximum 5 files / ไฟล์ได้สูงสุด 5 ไฟล์');
+        return;
+      }
+      // --- Size gate (non-image files checked here; images are resized so always OK) ---
+      if (!file.type.startsWith('image/') && file.size > MAX_RAW_SIZE) {
+        alert('File "' + file.name + '" is too large (' + (file.size / 1024 / 1024).toFixed(1) + ' MB).\nMax allowed: 5 MB.\n\nไฟล์ใหญ่เกินไป — สูงสุด 5 MB');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const dataUrl = e.target.result;
+        const base64 = dataUrl.split(',')[1];
+        const mime = file.type || 'application/octet-stream';
+        if (mime.startsWith('image/')) {
+          const img = new Image();
+          img.onload = function() {
+            const c = document.createElement('canvas');
+            const MAX = 800;
+            let w = img.width, h = img.height;
+            if (w > MAX || h > MAX) {
+              if (w > h) { h = h * MAX / w; w = MAX; }
+              else { w = w * MAX / h; h = MAX; }
+            }
+            c.width = w; c.height = h;
+            c.getContext('2d').drawImage(img, 0, 0, w, h);
+            attachedFiles.push({ name: file.name, base64: c.toDataURL('image/jpeg', 0.6).split(',')[1], mimeType: 'image/jpeg' });
+            renderFileList(); validateForm();
+          };
+          img.onerror = function() { alert('Could not read image: ' + file.name); };
+          img.src = dataUrl;
+        } else {
+          attachedFiles.push({ name: file.name, base64, mimeType: mime });
+          renderFileList(); validateForm();
+        }
+      };
+      reader.onerror = function() { alert('Could not read file: ' + file.name); };
+      reader.readAsDataURL(file);
+    });
+    input.value = '';
+  }
+
+
+
+
+  function removeFile(i) { attachedFiles.splice(i, 1); renderFileList(); validateForm(); }
+
+
+
+
+  function renderFileList() {
+    const el = document.getElementById('fileList');
+    if (!attachedFiles.length) { el.innerHTML = ''; return; }
+    el.innerHTML = attachedFiles.map((f, i) => {
+      const icon = f.mimeType.startsWith('image/') ? '🖼️' : f.mimeType.startsWith('video/') ? '🎬' : '📄';
+      const n = f.name.length > 28 ? f.name.substring(0, 25) + '...' : f.name;
+      return '<div class="file-item"><span class="file-icon">' + icon + '</span><span class="file-name">' + n + '</span><button class="file-remove" onclick="removeFile(' + i + ')">✕</button></div>';
+    }).join('');
+  }
+
+
+
+
+  function submitForm() {
+    uploadFailures = [];
+    const data = {
+      requestType: selectedJobType,
+      area: document.getElementById('areaSelect').value,
+      title: document.getElementById('issueTitle').value.trim(),
+      details: document.getElementById('issueDetails').value.trim(),
+      author: document.getElementById('staffName').value,
+      fileCount: attachedFiles.length,
+    };
+    showLoading('Submitting / กำลังส่ง...');
+    // DEMO: simulate server delay then return mock result
+    setTimeout(() => onSubmitSuccess(getMockSubmitResult(data)), 1200);
+  }
+
+
+
+
+  function onSubmitSuccess(result) {
+    submissionData = result;
+    // Show card IMMEDIATELY — don't wait for uploads
+    hideLoading();
+    generateCard(result);
+    showPage('page3');
+
+
+
+
+    // Upload files in background if any
+    if (attachedFiles.length > 0 && result.folderId) {
+      uploadFilesBackground(result.folderId, 0);
+    }
+  }
+
+
+
+
+  let uploadFailures = [];
+
+
+
+
+  function uploadFilesBackground(folderId, idx) {
+    // DEMO: no-op — files are not uploaded
+    return;
+  }
+
+
+  function onSubmitError(err) {
+    hideLoading();
+    alert('Submission failed / ส่งไม่สำเร็จ:\n' + err.message);
+  }
+ 
+  // ==================== CARD 1080×1080 ====================
+  function generateCard(data) {
+    const canvas = document.getElementById('cardCanvas');
+    const ctx = canvas.getContext('2d');
+    const W = 1080, H = 1080;
+    canvas.width = W; canvas.height = H;
+
+
+
+
+    const logoImg = new Image();
+    logoImg.crossOrigin = 'anonymous';
+    logoImg.onload = function() { drawCard(ctx, W, H, data, logoImg); };
+    logoImg.onerror = function() { drawCard(ctx, W, H, data, null); };
+    if (venueConfig && venueConfig.logoUrl) {
+      logoImg.src = venueConfig.logoUrl;
+    } else {
+      drawCard(ctx, W, H, data, null);
+    }
+  }
+
+
+
+
+ function wrapTextTH(ctx, text, maxWidth) {
+  if (!text) return [];
+
+
+
+
+  const paragraphs = String(text).split(/\r?\n/);
+  const lines = [];
+
+
+
+
+  for (const para of paragraphs) {
+    const t = para.trim();
+    if (!t) { lines.push(''); continue; }
+
+
+
+
+    // Word split (English)
+    const words = t.split(/\s+/);
+    let line = '';
+
+
+
+
+    for (const w of words) {
+      const test = line ? (line + ' ' + w) : w;
+
+
+
+
+      if (ctx.measureText(test).width <= maxWidth) {
+        line = test;
+        continue;
+      }
+
+
+
+
+      if (line) lines.push(line);
+
+
+
+
+      // Thai / long token fallback: split by character
+      if (ctx.measureText(w).width > maxWidth) {
+        let chunk = '';
+        for (const ch of w) {
+          const testChunk = chunk + ch;
+          if (ctx.measureText(testChunk).width <= maxWidth) {
+            chunk = testChunk;
+          } else {
+            if (chunk) lines.push(chunk);
+            chunk = ch;
+          }
+        }
+        line = chunk;
+      } else {
+        line = w;
+      }
+    }
+
+
+
+
+    if (line) lines.push(line);
+  }
+
+
+
+
+  return lines;
+}
+
+
+
+
+function drawCard(ctx, W, H, data, logoImg) {
+  // Colors
+  const TEXT = '#514d47';
+  const GOLD = '#E6A831';
+  const SUB  = '#8a8580';
+
+
+
+
+  // Scale helpers (keeps your 1080 mock coordinates consistent on any canvas size)
+  const sx = W / 1080;
+  const sy = H / 1080;
+  const X = (px) => Math.round(px * sx);
+  const Y = (px) => Math.round(px * sy);
+  const xPct = (pct) => Math.round((pct / 100) * W);
+
+
+
+
+  // ---- WHITE BACKGROUND ----
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(0, 0, W, H);
+
+
+
+
+  // ---- GOLD BORDER ----
+  ctx.strokeStyle = GOLD;
+  ctx.lineWidth = X(12);
+  roundRect(ctx, X(16), Y(16), W - X(32), H - Y(32), X(28));
+  ctx.stroke();
+
+
+
+
+  // =======================
+  // TOP (your updated spec)
+  // =======================
+  const logoY = Y(52);
+  const logoH = Y(80);
+
+
+
+
+  const badgeY = Y(162);
+  const badgeH = Y(74);
+  const badgeX = xPct(4.39);
+  const badgeW = xPct(91.13);
+
+
+
+
+  // Logo centered, fixed height, aspect preserved
+  if (logoImg) {
+    const aspect = logoImg.width / logoImg.height;
+    let drawH = logoH;
+    let drawW = Math.round(drawH * aspect);
+
+
+
+
+    const maxLogoW = xPct(60);
+    if (drawW > maxLogoW) drawW = maxLogoW;
+
+
+
+
+    const logoX = Math.round((W - drawW) / 2);
+    ctx.drawImage(logoImg, logoX, logoY, drawW, drawH);
+  } else {
+    ctx.fillStyle = GOLD;
+    ctx.font = `bold ${Math.round(90 * sy)}px Prompt, sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillText('OSKAR', W / 2, logoY + logoH);
+  }
+
+
+
+
+  // Badge
+  roundRect(ctx, badgeX, badgeY, badgeW, badgeH, X(10));
+  ctx.fillStyle = GOLD;
+  ctx.fill();
+
+
+
+
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = `bold ${Math.round(51 * sy)}px "Arial Narrow", Arial, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  const badgeText = (data.requestType || 'MAINTENANCE') + ' JOB REQUEST';
+  ctx.fillText(badgeText, W / 2, badgeY + badgeH / 2);
+  ctx.textBaseline = 'alphabetic';
+
+
+
+
+  // ---- Detect Event Support ----
+  const isEvent = (data.requestType || '').toUpperCase() === 'EVENT SUPPORT';
+  const hasEventLine = isEvent && data.assetId;
+
+
+
+
+  // =======================
+  // FIXED ZONE + FIXED DIVIDER/FOOTER
+  // =======================
+  const zoneTop = Y(256);
+  const zoneBottom = Y(856);
+  const zoneH = zoneBottom - zoneTop;
+
+
+
+
+  const dividerY = Y(856); // fixed line
+
+
+
+
+  // Left/right padding for text widths (THIS prevents spill reliably)
+  const leftText = xPct(8.15);
+  const rightPad = xPct(8.15); // match your border-ish padding
+  const titleMaxW = W - leftText - rightPad;
+
+
+
+
+  // Positions
+  const leftIcon = xPct(5.38);
+  const leftTitle = xPct(12.56);
+  const areaPinX = xPct(6.03);
+  const areaTextX = xPct(13.06);
+
+
+
+
+  // Fonts (base)
+  const areaPinFont = Math.round(40 * sy);
+  const areaFont = Math.round(50 * sy);
+  const titleIconFont = Math.round(55 * sy);
+  const titleFont = Math.round(68 * sy);
+  const eventFont = Math.round(42 * sy);
+
+
+
+
+  const descBaseFont = Math.round(45 * sy);
+  const descMinFont = Math.max(22, Math.round(30 * sy));
+
+
+
+
+  // Spacing
+  const gapAfterArea = Y(22);
+  const gapAfterTitle = Y(10);
+  const gapAfterEvent = Y(10);
+  const gapBeforeDesc = Y(14);
+
+
+
+
+  // Line heights
+  const areaRowH = Math.round(areaFont * 1.25);
+  const titleLineH = Math.round(titleFont * 1.10);
+  const eventLineH = Math.round(eventFont * 1.20);
+
+
+
+
+  // =======================
+  // MEASURE + WRAP TITLE
+  // =======================
+  const hasArea = !!data.area;
+
+
+
+
+  ctx.font = `bold ${titleFont}px Arial, sans-serif`;
+  const titleText = (data.title || '').toUpperCase();
+  const titleLines = wrapTextTH(ctx, titleText, titleMaxW).slice(0, 3);
+  const titleBlockH = Math.max(1, titleLines.length) * titleLineH;
+
+
+
+
+  // Fixed height (everything except description)
+  let fixedH = 0;
+  if (hasArea) fixedH += areaRowH + gapAfterArea;
+  fixedH += titleBlockH + gapAfterTitle;
+  if (hasEventLine) fixedH += eventLineH + gapAfterEvent;
+  fixedH += gapBeforeDesc;
+
+
+
+
+  // =======================
+  // WRAP DESCRIPTION + AUTO FONT SHRINK TO FIT HEIGHT
+  // =======================
+  const descRaw = (data.detailsThai || data.details || '').toString();
+  const descAvailH = Math.max(0, zoneH - fixedH);
+
+
+
+
+  let descFont = descBaseFont;
+  let descLineH = Math.round(descFont * 1.28);
+  let descLines = [];
+  let maxLinesFit = 0;
+
+
+
+
+  if (descRaw) {
+    while (true) {
+      ctx.font = `${descFont}px Arial, sans-serif`;
+      descLineH = Math.round(descFont * 1.28);
+      descLines = wrapTextTH(ctx, descRaw, titleMaxW); // same width logic as title
+      maxLinesFit = descLineH > 0 ? Math.floor(descAvailH / descLineH) : 0;
+
+
+
+
+      if (maxLinesFit <= 0) { descLines = []; break; }
+      if (descLines.length <= maxLinesFit) break;
+      if (descFont <= descMinFont) break;
+
+
+
+
+      descFont = Math.max(descMinFont, descFont - 2);
+    }
+  }
+
+
+
+
+  let descToDraw = [];
+  if (descLines.length && maxLinesFit > 0) {
+    descToDraw = descLines.slice(0, maxLinesFit);
+    if (descLines.length > maxLinesFit) {
+      const last = descToDraw.length - 1;
+      descToDraw[last] = descToDraw[last].replace(/\s+$/, '') + '…';
+    }
+  }
+  const descBlockH = descToDraw.length * descLineH;
+
+
+
+
+  // =======================
+  // CENTER THE WHOLE CONTENT BLOCK IN THE ZONE
+  // =======================
+  const totalContentH = fixedH + descBlockH;
+  const extraTop = Math.max(0, Math.floor((zoneH - totalContentH) / 2));
+  let y = zoneTop + extraTop;
+
+
+
+
+  // =======================
+  // DRAW AREA
+  // =======================
+  if (hasArea) {
+    ctx.fillStyle = TEXT;
+    ctx.textAlign = 'left';
+
+
+
+
+    ctx.font = `${areaPinFont}px Arial, sans-serif`;
+    ctx.fillText('⊙', areaPinX, y + Math.round(areaRowH * 0.82));
+
+
+
+
+    ctx.font = `bold ${areaFont}px Arial, sans-serif`;
+    ctx.fillText(data.area, areaTextX, y + Math.round(areaRowH * 0.84));
+
+
+
+
+    y += areaRowH + gapAfterArea;
+  }
+
+
+
+
+  // =======================
+  // DRAW TITLE
+  // =======================
+  const titleIcon = isEvent ? '🎪' : '🔧';
+  ctx.fillStyle = TEXT;
+  ctx.textAlign = 'left';
+
+
+
+
+  ctx.font = `${titleIconFont}px Arial, sans-serif`;
+  ctx.fillText(titleIcon, leftIcon, y + Math.round(titleLineH * 0.86));
+
+
+
+
+  ctx.font = `bold ${titleFont}px Arial, sans-serif`;
+  let ty = y + Math.round(titleLineH * 0.86);
+  for (let i = 0; i < titleLines.length; i++) {
+    ctx.fillText(titleLines[i], i === 0 ? leftTitle : leftIcon, ty);
+    ty += titleLineH;
+  }
+
+
+
+
+  y += titleBlockH + gapAfterTitle;
+
+
+
+
+  // =======================
+  // DRAW EVENT LINE
+  // =======================
+  if (hasEventLine) {
+    const raw = String(data.assetId).trim();
+    const dd = raw.substring(0, 2);
+    const mm = raw.substring(2, 4);
+    const yy = raw.substring(4, 6);
+    const timePart = raw.substring(7).replace('.', ':');
+
+
+
+
+    ctx.fillStyle = SUB;
+    ctx.font = `${eventFont}px Arial, sans-serif`;
+    ctx.textAlign = 'left';
+
+
+
+
+    const base = y + Math.round(eventLineH * 0.82);
+    ctx.fillText('ON  ' + dd + '/' + mm + '/20' + yy, xPct(8.52), base);
+    ctx.fillText('AT  ' + timePart, xPct(56.93), base);
+
+
+
+
+    y += eventLineH + gapAfterEvent;
+  }
+
+
+
+
+  // =======================
+  // DRAW DESCRIPTION
+  // =======================
+  if (descToDraw.length) {
+    y += gapBeforeDesc;
+
+
+
+
+    ctx.fillStyle = SUB;
+    ctx.font = `${descFont}px Arial, sans-serif`;
+    ctx.textAlign = 'left';
+
+
+
+
+    for (let i = 0; i < descToDraw.length; i++) {
+      const base = y + Math.round(descLineH * 0.82);
+      if (base > zoneBottom) break;
+      ctx.fillText(descToDraw[i], leftText, base);
+      y += descLineH;
+    }
+  }
+
+
+
+
+  // =======================
+  // DIVIDER (fixed)
+  // =======================
+  ctx.strokeStyle = GOLD;
+  ctx.lineWidth = X(3);
+  ctx.beginPath();
+  ctx.moveTo(xPct(4.39), dividerY);
+  ctx.lineTo(xPct(95.52), dividerY);
+  ctx.stroke();
+
+
+
+
+  // =======================
+  // FOOTER (same as your existing)
+  // =======================
+  const yPct = (pct) => Math.round((pct / 100) * H);
+
+
+
+
+  ctx.fillStyle = TEXT;
+  ctx.textAlign = 'left';
+
+
+
+
+    ctx.font = `bold ${Math.round(46 * sy)}px Arial, sans-serif`;
+  ctx.fillText('REQUEST BY', xPct(8.52), yPct(82.5) + yPct(3.54) * 0.8);
+
+
+
+
+  ctx.font = `${Math.round(42 * sy)}px Arial, sans-serif`;
+  ctx.fillText('REQUEST MADE ON', xPct(8.52), yPct(87) + yPct(3.14) * 0.75);
+
+
+
+
+  ctx.font = `bold ${Math.round(46 * sy)}px Arial, sans-serif`;
+  ctx.fillText((data.author || '').toUpperCase(), xPct(56.93), yPct(82.7) + yPct(3.24) * 0.8);
+
+
+
+
+  ctx.font = `${Math.round(42 * sy)}px Arial, sans-serif`;
+  ctx.fillText(data.timestamp || '', xPct(57.28), yPct(87.15) + yPct(2.99) * 0.75);
+
+
+
+
+  // REQ_ID line
+  if (data.reqId) {
+    ctx.font = `bold ${Math.round(38 * sy)}px Arial, sans-serif`;
+    ctx.fillStyle = GOLD;
+    ctx.textAlign = 'center';
+       ctx.fillText('ID: ' + data.reqId, W / 2, yPct(95));
+  }
+}
+
+
+function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+  async function shareCard() {
+    const canvas = document.getElementById('cardCanvas');
+    try {
+      const blob = await new Promise((res, rej) => {
+        try { canvas.toBlob(b => b ? res(b) : rej(new Error('empty')), 'image/png'); }
+        catch(e) { rej(e); }
+      });
+      const file = new File([blob], 'maintenance-request.png', { type: 'image/png' });
+      const shareData = {
+        title: 'Maintenance Request — OSKAR BISTRO',
+        files: [file],
+      };
+      if (submissionData && submissionData.folderUrl) {
+        shareData.text = '📁 ' + submissionData.folderName + '\n' + submissionData.folderUrl;
+      }
+      if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+        await navigator.share(shareData);
+      } else { saveCard(); }
+    } catch (e) {
+      if (e.name !== 'AbortError') {
+        if (submissionData) { drawCard(canvas.getContext('2d'), 1080, 1080, submissionData, null); }
+        saveCard();
+      }
+    }
+  }
+
+
+
+
+  function saveCard() {
+    const canvas = document.getElementById('cardCanvas');
+    try {
+      const a = document.createElement('a');
+      a.href = canvas.toDataURL('image/png');
+      a.download = 'request-' + (submissionData ? submissionData.timestamp.replace(/[\/: ]/g, '-') : 'card') + '.png';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    } catch(e) {
+      // Tainted canvas — redraw without logo
+      if (submissionData) { drawCard(canvas.getContext('2d'), 1080, 1080, submissionData, null); }
+      const a = document.createElement('a');
+      a.href = canvas.toDataURL('image/png');
+      a.download = 'request-card.png';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    }
+  }
+
+
+  // ==================== TIME PICKER ====================
+  let selectedHour = 18;
+  let selectedMinute = 0;
+
+
+  function openTimePicker() {
+    var val = document.getElementById('eventTime').value || '18:00';
+    var parts = val.split(':');
+    selectedHour = parseInt(parts[0]);
+    selectedMinute = parseInt(parts[1]);
+    renderTimeColumns();
+    document.getElementById('timePickerOverlay').classList.add('active');
+  }
+
+
+  function closeTimePicker() {
+    document.getElementById('timePickerOverlay').classList.remove('active');
+  }
+
+
+  function renderTimeColumns() {
+    var hourCol = document.getElementById('hourCol');
+    var minuteCol = document.getElementById('minuteCol');
+    hourCol.innerHTML = '';
+    for (var h = 6; h <= 23; h++) {
+      var div = document.createElement('div');
+      div.className = 'time-item' + (h === selectedHour ? ' selected' : '');
+      div.textContent = String(h).padStart(2, '0');
+      div.onclick = (function(hr) { return function() { selectHour(hr); }; })(h);
+      hourCol.appendChild(div);
+    }
+    minuteCol.innerHTML = '';
+    [0, 30].forEach(function(m) {
+      var div = document.createElement('div');
+      div.className = 'time-item' + (m === selectedMinute ? ' selected' : '');
+      div.textContent = String(m).padStart(2, '0');
+      div.onclick = (function(mn) { return function() { selectMinute(mn); }; })(m);
+      minuteCol.appendChild(div);
+    });
+    var sel = hourCol.querySelector('.selected');
+    if (sel) sel.scrollIntoView({ block: 'center' });
+  }
+
+
+  function selectHour(h) {
+    selectedHour = h;
+    document.querySelectorAll('#hourCol .time-item').forEach(function(el) {
+      el.classList.toggle('selected', parseInt(el.textContent) === h);
+    });
+  }
+
+
+  function selectMinute(m) {
+    selectedMinute = m;
+    document.querySelectorAll('#minuteCol .time-item').forEach(function(el) {
+      el.classList.toggle('selected', parseInt(el.textContent) === m);
+    });
+  }
+
+
+  function confirmTime() {
+    var val = String(selectedHour).padStart(2, '0') + ':' + String(selectedMinute).padStart(2, '0');
+    document.getElementById('eventTime').value = val;
+    document.getElementById('timeDisplay').textContent = val;
+    closeTimePicker();
+    checkEventReady();
+  }
+
+
+
+
+  // ==================== EVENT SUPPORT (PAGE 2B) ====================
+  let eventFiles = [];
+  let dateBlocked = false;
+
+
+
+
+  function checkEventDate() {
+    const dateVal = document.getElementById('eventDate').value;
+    const blockMsg = document.getElementById('dateBlockMsg');
+
+
+
+
+    if (!dateVal) {
+      blockMsg.classList.remove('active');
+      dateBlocked = false;
+      return;
+    }
+
+
+
+
+    const eventDate = new Date(dateVal + 'T00:00:00');
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const diffDays = Math.floor((eventDate - today) / (1000 * 60 * 60 * 24));
+
+
+
+
+    if (diffDays < 5) {
+      blockMsg.classList.add('active');
+      document.getElementById('btnSubmitEvent').disabled = true;
+      dateBlocked = true;
+    } else {
+      blockMsg.classList.remove('active');
+      dateBlocked = false;
+    }
+  }
+
+
+
+
+  function checkEventReady() {
+    if (dateBlocked) {
+      document.getElementById('btnSubmitEvent').disabled = true;
+      return;
+    }
+    const name = document.getElementById('eventName').value.trim();
+    const date = document.getElementById('eventDate').value;
+    const time = document.getElementById('eventTime').value;
+    const type = document.getElementById('supportType').value;
+    document.getElementById('btnSubmitEvent').disabled = !(name && date && time && type);
+  }
+
+
+
+
+  function handleEventFiles(input) {
+    if (!input.files || !input.files.length) return;
+    Array.from(input.files).forEach(file => {
+      if (eventFiles.length >= 5) {
+        alert('Maximum 5 files / ไฟล์ได้สูงสุด 5 ไฟล์');
+        return;
+      }
+      if (file.size > MAX_RAW_SIZE) {
+        alert('File "' + file.name + '" is too large.\nMax: 5 MB / ไฟล์ใหญ่เกินไป');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const base64 = e.target.result.split(',')[1];
+        const mime = file.type || 'application/octet-stream';
+        eventFiles.push({ name: file.name, base64: base64, mimeType: mime });
+        renderEventFileList();
+      };
+      reader.readAsDataURL(file);
+    });
+    input.value = '';
+  }
+
+
+
+
+  function removeEventFile(i) {
+    eventFiles.splice(i, 1);
+    renderEventFileList();
+  }
+
+
+
+
+  function renderEventFileList() {
+    const el = document.getElementById('eventFileList');
+    if (!eventFiles.length) { el.innerHTML = ''; return; }
+    el.innerHTML = eventFiles.map((f, i) => {
+      const icon = f.mimeType.startsWith('image/') ? '🖼️' : '📄';
+      const n = f.name.length > 28 ? f.name.substring(0, 25) + '...' : f.name;
+      return '<div class="file-item"><span class="file-icon">' + icon + '</span><span class="file-name">' + n + '</span><button class="file-remove" onclick="removeEventFile(' + i + ')">✕</button></div>';
+    }).join('');
+  }
+
+
+
+
+  function formatEventDateTime() {
+    // Output: DDMMYY HH.MM (e.g. 150326 18.00)
+    const dateVal = document.getElementById('eventDate').value; // YYYY-MM-DD
+    const timeVal = document.getElementById('eventTime').value; // HH:MM
+    const parts = dateVal.split('-');
+    const yy = parts[0].substring(2);
+    const mm = parts[1];
+    const dd = parts[2];
+    const timeParts = timeVal.split(':');
+    return dd + mm + yy + ' ' + timeParts[0] + '.' + timeParts[1];
+  }
+
+
+  function submitEvent() {
+    const name = document.getElementById('eventName').value.trim();
+    if (!name || dateBlocked) return;
+
+
+
+
+    uploadFailures = [];
+    const data = {
+      requestType: 'EVENT SUPPORT',
+      area: document.getElementById('supportType').value,
+      title: name,
+      details: document.getElementById('eventNotes').value.trim(),
+      author: document.getElementById('staffName').value,
+      assetId: formatEventDateTime(),
+      fileCount: eventFiles.length,
+    };
+
+
+
+
+    showLoading('Submitting event / กำลังส่ง...');
+    // DEMO: simulate server delay then return mock result
+    setTimeout(function() {
+      var result = getMockSubmitResult(data);
+      submissionData = result;
+      hideLoading();
+      generateCard(result);
+      showPage('page3');
+    }, 1200);
+  }
+
+
+
+
+  function uploadEventFilesBackground(folderId, idx) {
+    // DEMO: no-op — files are not uploaded
+    return;
+  }
+
+
+
+
+  function resetApp() {
+    document.getElementById('staffName').value = '';
+    document.querySelectorAll('.job-type-btn').forEach(b => b.classList.remove('selected'));
+    selectedJobType = '';
+    document.getElementById('areaSelect').value = '';
+    document.getElementById('issueTitle').value = '';
+    document.getElementById('issueDetails').value = '';
+    attachedFiles = []; uploadFailures = []; renderFileList();
+    eventFiles = []; dateBlocked = false;
+    document.getElementById('eventName').value = '';
+    document.getElementById('eventDate').value = '';
+    document.getElementById('eventTime').value = '18:00';
+    document.getElementById('timeDisplay').textContent = '18:00';
+    document.getElementById('supportType').value = '';
+    document.getElementById('eventNotes').value = '';
+    document.getElementById('eventFileList').innerHTML = '';
+    document.getElementById('dateBlockMsg').classList.remove('active');
+    document.getElementById('btnSubmitEvent').disabled = true;
+    document.getElementById('btnNext').disabled = true;
+    document.getElementById('btnSubmit').disabled = true;
+    submissionData = null;
+    showPage('page1');
+  }
+
+
+
+
+  function showLoading(msg) {
+    document.getElementById('loadingMsg').textContent = msg || 'Loading...';
+    document.getElementById('loadingOverlay').classList.add('active');
+  }
+  function hideLoading() { document.getElementById('loadingOverlay').classList.remove('active'); }
+</script>
+</body>
+</html>
+
+
+
