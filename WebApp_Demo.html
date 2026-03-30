@@ -6,6 +6,7 @@
   <title>OSKAR BISTRO — Facilities (DEMO)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -986,7 +987,7 @@
       reqId: "OSKB" + yy + mm + dd + ord,
       rowNum: 99,
       folderId: "",
-      folderUrl: "",
+      folderUrl: "https://drive.google.com/drive/folders/demo-" + yy + mm + dd + "-" + ord,
       folderName: "OSKB_" + yy + mm + dd + "_" + ord,
       timestamp: dd + "/" + mm + "/20" + yy + " " + hh + ":" + mi,
       venueName: "OSKAR BISTRO",
@@ -1749,12 +1750,53 @@ function drawCard(ctx, W, H, data, logoImg) {
 
 
 
-  // REQ_ID line
+  // =======================
+  // QR CODE (folder link) — bottom right
+  // =======================
+  const hasQR = data.folderUrl && typeof qrcode !== 'undefined';
+  const qrSize = X(130);
+  const qrX = W - xPct(8.15) - qrSize;
+  const qrY = yPct(89.5);
+
+  if (hasQR) {
+    try {
+      const qr = qrcode(0, 'M');
+      qr.addData(data.folderUrl);
+      qr.make();
+      const mods = qr.getModuleCount();
+      const cellSize = qrSize / mods;
+
+      // White background behind QR
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(qrX - X(4), qrY - X(4), qrSize + X(8), qrSize + X(8));
+
+      // Draw QR modules
+      for (let row = 0; row < mods; row++) {
+        for (let col = 0; col < mods; col++) {
+          if (qr.isDark(row, col)) {
+            ctx.fillStyle = TEXT;
+            ctx.fillRect(qrX + col * cellSize, qrY + row * cellSize, cellSize + 0.5, cellSize + 0.5);
+          }
+        }
+      }
+
+      // Label below QR
+      ctx.fillStyle = SUB;
+      ctx.font = `${Math.round(22 * sy)}px Arial, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.fillText('📁 PHOTOS / VIDEOS', qrX + qrSize / 2, qrY + qrSize + Y(20));
+    } catch (e) {
+      // QR generation failed — skip silently
+    }
+  }
+
+  // REQ_ID line — shift left if QR is present
   if (data.reqId) {
     ctx.font = `bold ${Math.round(38 * sy)}px Arial, sans-serif`;
     ctx.fillStyle = GOLD;
-    ctx.textAlign = 'center';
-       ctx.fillText('ID: ' + data.reqId, W / 2, yPct(95));
+    ctx.textAlign = hasQR ? 'left' : 'center';
+    const reqIdX = hasQR ? xPct(8.52) : W / 2;
+    ctx.fillText('ID: ' + data.reqId, reqIdX, yPct(95));
   }
 }
 
