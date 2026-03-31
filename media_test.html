@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Media Input Test</title>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Prompt', sans-serif; background: #E6A831; padding: 16px; min-height: 100dvh; }
+  .card { background: #fff; border-radius: 20px; padding: 20px; margin-bottom: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.1); }
+  h1 { font-size: 18px; text-align: center; color: #fff; margin-bottom: 12px; }
+  h2 { font-size: 15px; margin-bottom: 12px; color: #2D2D2D; }
+  .test-btn {
+    display: block; width: 100%; padding: 16px; margin-bottom: 10px;
+    background: #FFF8E7; border: 2px solid #E6A831; border-radius: 14px;
+    font-size: 14px; font-family: 'Prompt', sans-serif; text-align: left;
+    cursor: pointer; color: #2D2D2D;
+  }
+  .test-btn strong { display: block; font-size: 15px; margin-bottom: 2px; }
+  .test-btn code { font-size: 11px; color: #888; word-break: break-all; }
+  .result { font-size: 13px; color: #27AE60; padding: 4px 0 8px; display: none; }
+  .note { font-size: 13px; color: #888; line-height: 1.5; margin-top: 8px; }
+  input[type=file] { display: none; }
+</style>
+</head>
+<body>
+
+<h1>MEDIA INPUT TEST PAGE</h1>
+<div class="card">
+  <h2>Tap each button below and tell me what happens</h2>
+  <p class="note">For each button: does it open the Camera, a File Browser, a Gallery, or a "Choose an action" menu? Write down the number and what you see.</p>
+</div>
+
+<div class="card">
+  <h2>GROUP A — image/video accept</h2>
+
+  <label class="test-btn" for="t1">
+    <strong>1. accept="image/*,video/*" — no capture</strong>
+    <code>&lt;input accept="image/*,video/*" multiple&gt;</code>
+  </label>
+  <div class="result" id="r1"></div>
+  <input type="file" id="t1" accept="image/*,video/*" multiple onchange="log(1,this)">
+
+  <label class="test-btn" for="t2">
+    <strong>2. accept="image/*,video/*" — capture="environment"</strong>
+    <code>&lt;input accept="image/*,video/*" capture="environment"&gt;</code>
+  </label>
+  <div class="result" id="r2"></div>
+  <input type="file" id="t2" accept="image/*,video/*" capture="environment" onchange="log(2,this)">
+
+  <label class="test-btn" for="t3">
+    <strong>3. accept="image/*,video/*" — capture="user"</strong>
+    <code>&lt;input accept="image/*,video/*" capture="user"&gt;</code>
+  </label>
+  <div class="result" id="r3"></div>
+  <input type="file" id="t3" accept="image/*,video/*" capture="user" onchange="log(3,this)">
+
+  <label class="test-btn" for="t4">
+    <strong>4. accept="image/*" only — capture="environment"</strong>
+    <code>&lt;input accept="image/*" capture="environment"&gt;</code>
+  </label>
+  <div class="result" id="r4"></div>
+  <input type="file" id="t4" accept="image/*" capture="environment" onchange="log(4,this)">
+</div>
+
+<div class="card">
+  <h2>GROUP B — broad accept</h2>
+
+  <label class="test-btn" for="t5">
+    <strong>5. accept="*/*" — no capture</strong>
+    <code>&lt;input accept="*/*" multiple&gt;</code>
+  </label>
+  <div class="result" id="r5"></div>
+  <input type="file" id="t5" accept="*/*" multiple onchange="log(5,this)">
+
+  <label class="test-btn" for="t6">
+    <strong>6. accept="*/*" — capture="environment"</strong>
+    <code>&lt;input accept="*/*" capture="environment" multiple&gt;</code>
+  </label>
+  <div class="result" id="r6"></div>
+  <input type="file" id="t6" accept="*/*" capture="environment" multiple onchange="log(6,this)">
+
+  <label class="test-btn" for="t7">
+    <strong>7. NO accept — no capture</strong>
+    <code>&lt;input type="file" multiple&gt;</code>
+  </label>
+  <div class="result" id="r7"></div>
+  <input type="file" id="t7" multiple onchange="log(7,this)">
+
+  <label class="test-btn" for="t8">
+    <strong>8. NO accept — capture="environment"</strong>
+    <code>&lt;input type="file" capture="environment"&gt;</code>
+  </label>
+  <div class="result" id="r8"></div>
+  <input type="file" id="t8" capture="environment" onchange="log(8,this)">
+</div>
+
+<div class="card">
+  <h2>GROUP C — PDF / documents</h2>
+
+  <label class="test-btn" for="t9">
+    <strong>9. accept=".pdf,.doc,.docx" — no capture</strong>
+    <code>&lt;input accept=".pdf,.doc,.docx" multiple&gt;</code>
+  </label>
+  <div class="result" id="r9"></div>
+  <input type="file" id="t9" accept=".pdf,.doc,.docx" multiple onchange="log(9,this)">
+
+  <label class="test-btn" for="t10">
+    <strong>10. accept="application/pdf,image/*,video/*" — no capture</strong>
+    <code>&lt;input accept="application/pdf,image/*,video/*" multiple&gt;</code>
+  </label>
+  <div class="result" id="r10"></div>
+  <input type="file" id="t10" accept="application/pdf,image/*,video/*" multiple onchange="log(10,this)">
+</div>
+
+<div class="card">
+  <h2>RESULTS LOG</h2>
+  <div id="logArea" style="font-size:13px;color:#2D2D2D;line-height:1.8;"></div>
+  <p class="note" style="margin-top:12px;">Screenshot this section and send it to me.</p>
+</div>
+
+<script>
+function log(n, el) {
+  var files = el.files;
+  var names = [];
+  for (var i = 0; i < files.length; i++) {
+    names.push(files[i].name + ' (' + files[i].type + ', ' + Math.round(files[i].size/1024) + 'KB)');
+  }
+  var msg = 'Button ' + n + ': selected ' + files.length + ' file(s)' + (names.length ? ' — ' + names.join(', ') : '');
+  document.getElementById('r' + n).textContent = '✓ ' + msg;
+  document.getElementById('r' + n).style.display = 'block';
+  document.getElementById('logArea').innerHTML += msg + '<br>';
+  el.value = '';
+}
+</script>
+</body>
+</html>
