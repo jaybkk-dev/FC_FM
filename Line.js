@@ -121,6 +121,25 @@ function buildFlexMessage_(data) {
     }
   }
 
+  // Non-image media indicators
+  var mediaLabels = [];
+  if (data.hasVideo) mediaLabels.push('\uD83C\uDFAC Video');
+  if (data.hasAudio) mediaLabels.push('\uD83D\uDD0A Voice Note');
+  if (data.hasPdf) mediaLabels.push('\uD83D\uDCC4 PDF');
+  if (mediaLabels.length > 0) {
+    if (images.length === 0) bodyContents.push({ type: 'separator', margin: 'lg' });
+    bodyContents.push({
+      type: 'box',
+      layout: 'horizontal',
+      margin: 'md',
+      justifyContent: 'center',
+      spacing: 'lg',
+      contents: mediaLabels.map(function(label) {
+        return { type: 'text', text: label, size: 'sm', color: '#6B5955', align: 'center', flex: 0 };
+      })
+    });
+  }
+
   // Separator + metadata
   bodyContents.push({ type: 'separator', margin: 'lg' });
 

@@ -364,8 +364,11 @@ function sendLineAfterUpload(folderId, requestData) {
   requestData.detailsThai = translateToThai_(requestData.details || '');
   requestData.venueName = getVenueConfig().venueName;
 
-  // Get image URLs from the Drive folder
+  // Get media from the Drive folder
   var imageUrls = [];
+  var hasVideo = false;
+  var hasAudio = false;
+  var hasPdf = false;
   if (folderId) {
     try {
       var folder = DriveApp.getFolderById(folderId);
@@ -375,20 +378,28 @@ function sendLineAfterUpload(folderId, requestData) {
         var mime = file.getMimeType();
         if (mime.indexOf('image/') === 0) {
           var fileId = file.getId();
-          // Make file publicly viewable for LINE to fetch the thumbnail
           file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
           imageUrls.push({
             url: 'https://lh3.googleusercontent.com/d/' + fileId,
             preview: 'https://lh3.googleusercontent.com/d/' + fileId + '=s240'
           });
+        } else if (mime.indexOf('video/') === 0) {
+          hasVideo = true;
+        } else if (mime.indexOf('audio/') === 0) {
+          hasAudio = true;
+        } else if (mime === 'application/pdf') {
+          hasPdf = true;
         }
       }
     } catch (e) {
-      Logger.log('Failed to read images from folder: ' + e.message);
+      Logger.log('Failed to read media from folder: ' + e.message);
     }
   }
 
   requestData.imageUrls = imageUrls;
+  requestData.hasVideo = hasVideo;
+  requestData.hasAudio = hasAudio;
+  requestData.hasPdf = hasPdf;
 
   // Always send maintenance card to maintenance group
   notifyLineGroup_(requestData);
@@ -549,3 +560,4 @@ function removeUser(name) {
   return getVenueConfig();
 }
 // clasp-sync 1775090634
+// sync 1775590367

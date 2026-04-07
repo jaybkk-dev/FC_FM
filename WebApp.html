@@ -827,7 +827,7 @@
       </div>
     </div>
 
-    <div class="hint">* Title + at least one detail or attachment / หัวข้อ + รายละเอียดหรือแนบไฟล์</div>
+    <div class="hint">* Title + at least one attachment required / หัวข้อ + แนบไฟล์อย่างน้อย 1 ไฟล์</div>
     <div class="gap-8"></div>
     <button id="btnSubmit" class="btn-primary" disabled onclick="submitForm()">SUBMIT / ส่งคำขอ</button>
   </div>
@@ -1058,7 +1058,7 @@
   function validateForm() {
     const title = document.getElementById('issueTitle').value.trim();
     const details = document.getElementById('issueDetails').value.trim();
-    document.getElementById('btnSubmit').disabled = !(title && (details || attachedFiles.length > 0));
+    document.getElementById('btnSubmit').disabled = !(title && attachedFiles.length > 0);
   }
 
 
