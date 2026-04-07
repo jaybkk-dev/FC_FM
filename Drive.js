@@ -55,6 +55,36 @@ function getOrCreateSub_(parent, name) {
 
 
 /**
+ * Creates an expense media folder in the EXPENSE_APPROVAL Drive folder.
+ * Flat structure (no year/month subfolders).
+ * Naming: OSKB_260401_EXP1 (EXP + ordinal 1-9)
+ * @param {string} venueCode - e.g. 'OSKB'
+ * @param {Date} timestamp
+ * @returns {Object} folder object
+ */
+function createExpenseFolder_(venueCode, timestamp) {
+  var expenseRootId = '1qW6c95-El1wqOAUUbPIf_7mTTifC6Xu5';
+  var root = DriveApp.getFolderById(expenseRootId);
+
+  var yy = Utilities.formatDate(timestamp, TZ, 'yy');
+  var mm = Utilities.formatDate(timestamp, TZ, 'MM');
+  var dd = Utilities.formatDate(timestamp, TZ, 'dd');
+  var dayPrefix = venueCode + '_' + yy + mm + dd + '_EXP';
+  var propKey = 'expFolderCount_' + venueCode + '_' + yy + mm + dd;
+
+  var props = PropertiesService.getScriptProperties();
+  var count = parseInt(props.getProperty(propKey) || '0', 10);
+  count++;
+  props.setProperty(propKey, String(count));
+
+  var folderName = dayPrefix + count;
+  var folder = root.createFolder(folderName);
+  folder.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  return folder;
+}
+
+
+/**
  * Uploads a single base64-encoded file to a job folder.
  * Files are named sequentially: 01.jpg, 02.mp4, etc.
  */

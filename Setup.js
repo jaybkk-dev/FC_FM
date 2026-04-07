@@ -120,6 +120,13 @@ function setupMasterProtections() {
     completed.protect().setDescription('COMPLETED — warning before editing').setWarningOnly(true);
   }
 
+  // EXPENSE_APPROVAL: warning-only
+  const expApproval = ss.getSheetByName('EXPENSE_APPROVAL');
+  if (expApproval) {
+    expApproval.getRange('1:1').protect().setDescription('EXPENSE_APPROVAL — header row').setWarningOnly(true);
+    expApproval.protect().setDescription('EXPENSE_APPROVAL — warning before editing').setWarningOnly(true);
+  }
+
   SpreadsheetApp.flush();
   Logger.log('Master protections complete');
 }

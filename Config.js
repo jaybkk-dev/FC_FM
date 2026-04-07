@@ -22,6 +22,17 @@ const OPENAI_API_KEY = 'REDACTED_OPENAI_KEY_ROTATED';
 const OPENAI_MODEL   = 'gpt-4o-mini';
 const OPENAI_URL     = 'https://api.openai.com/v1/chat/completions';
 
+// --- TEST MODE --------------------------------------------------
+// Set to true to route all LINE messages to the test group.
+// Set to false for production. Always false before go-live.
+const TEST_MODE = false;
+
+// --- LINE MESSAGING API -----------------------------------------
+const LINE_CHANNEL_ACCESS_TOKEN = 'REDACTED_LINE_TOKEN_NOW_IN_SCRIPT_PROPERTIES';
+const LINE_GROUP_ID = 'REDACTED_LINE_GROUP_ID';
+const LINE_TEST_GROUP_ID = 'REDACTED_LINE_TEST_GROUP_ID';
+const LINE_EXPENSE_GROUP_ID = 'REDACTED_LINE_EXPENSE_GROUP_ID';
+
 // --- TIMEZONE ---------------------------------------------------
 const TZ = 'Asia/Bangkok';
 
@@ -77,3 +88,5 @@ const COL_WIDTHS = {
   'CLOSURE_NOTES':      200,
 };
 
+
+// pushed 1775587509

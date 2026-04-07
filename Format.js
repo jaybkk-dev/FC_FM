@@ -65,7 +65,7 @@ function formatSheet(sheetName) {
 
     // Vertical borders (thin) + horizontal borders (dashed)
     bodyRange.setBorder(null, null, null, null, true, null, '#000000', SpreadsheetApp.BorderStyle.SOLID);
-    bodyRange.setBorder(null, null, null, null, null, true, '#000000', SpreadsheetApp.BorderStyle.DASHED);
+    bodyRange.setBorder(null, null, null, null, null, true, '#000000', SpreadsheetApp.BorderStyle.DOTTED);
 
     // Alt row colors + row heights
     for (let r = 2; r <= lastRow; r++) {
@@ -103,7 +103,7 @@ function formatSheet(sheetName) {
  * Formats ALL operational sheets.
  */
 function formatAllSheets() {
-  const tabs = ['RAW_INTAKE', 'MANUAL_INPUT', 'REQUESTS', 'COMPLETED'];
+  const tabs = ['RAW_INTAKE', 'MANUAL_INPUT', 'REQUESTS', 'COMPLETED', 'EXPENSE_APPROVAL'];
   tabs.forEach(function(name) { formatSheet(name); });
   Logger.log('formatAllSheets complete.');
   try { SpreadsheetApp.getUi().alert('All sheets formatted.'); } catch (e) {}
@@ -160,7 +160,7 @@ function formatNewRow(sheet, rowNum, headersCache) {
 
   // Borders
   row.setBorder(null, null, null, null, true, null, '#000000', SpreadsheetApp.BorderStyle.SOLID);
-  row.setBorder(null, null, true, null, null, null, '#000000', SpreadsheetApp.BorderStyle.DASHED);
+  row.setBorder(null, null, true, null, null, null, '#000000', SpreadsheetApp.BorderStyle.DOTTED);
 
   // Column-specific alignment + ASSET_ID bg
   const headers = headersCache || sheet.getRange(1, 1, 1, lastCol).getValues()[0];
@@ -275,7 +275,7 @@ function addManualInputRows(count) {
 
   // Borders
   newRange.setBorder(null, null, null, null, true, null, '#000000', SpreadsheetApp.BorderStyle.SOLID);
-  newRange.setBorder(null, null, null, null, null, true, '#000000', SpreadsheetApp.BorderStyle.DASHED);
+  newRange.setBorder(null, null, null, null, null, true, '#000000', SpreadsheetApp.BorderStyle.DOTTED);
 
   // Alt colors, alignment, ASSET_ID
   const headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0];

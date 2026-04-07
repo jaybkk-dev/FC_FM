@@ -119,6 +119,37 @@ function translateToThai_(text) {
 
 
 /**
+ * Translate text to English. If already English, return as-is.
+ */
+function translateToEnglish_(text) {
+  if (!text || text.trim() === '') return '';
+  var thaiChars = text.match(/[\u0E00-\u0E7F]/g);
+  if (!thaiChars || thaiChars.length < text.length * 0.1) return text;
+  try {
+    var res = UrlFetchApp.fetch(OPENAI_URL, {
+      method: 'post',
+      contentType: 'application/json',
+      headers: { 'Authorization': 'Bearer ' + OPENAI_API_KEY },
+      payload: JSON.stringify({
+        model: OPENAI_MODEL,
+        max_tokens: 200,
+        messages: [
+          { role: 'system', content: 'Translate the following maintenance issue description to English. Return ONLY the English translation, nothing else.' },
+          { role: 'user', content: text }
+        ]
+      }),
+      muteHttpExceptions: true,
+    });
+    var json = JSON.parse(res.getContentText());
+    return (json.choices && json.choices[0]) ? json.choices[0].message.content.trim() : text;
+  } catch (e) {
+    Logger.log('translateToEnglish_ failed: ' + e.message);
+    return text;
+  }
+}
+
+
+/**
  * Auto-classifies a request into TASK_CATEGORY + PRIORITY_LEVEL.
  * Accepts optional pre-loaded categories array to avoid repeated reads.
  * Returns { category: "...", priority: "..." }
