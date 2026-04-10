@@ -177,88 +177,92 @@ During import, media link columns may contain `=HYPERLINK(...)` formulas. Use `g
 - **OpenAI API** key in Config.gs — used for translation and classification
 - **Shared Drive** access — script owner must have write access to the shared drive
 
-## Current Status (updated 31 Mar 2026)
+## Current Status (updated 8 Apr 2026)
 
-### What just happened (session 30-31 Mar 2026)
+### LINE Integration (fully working)
+- **LINE Official Account:** "FC MAINTENANCE" (one account for all venues)
+- **Channel Access Token:** stored in `Config.js`
+- **Three LINE groups configured:**
+  - `LINE_GROUP_ID` — OSKAR MAINTENANCE (13 members, production)
+  - `LINE_TEST_GROUP_ID` — LINE FLEX TESTS (Jay only, for testing)
+  - `LINE_EXPENSE_GROUP_ID` — OSKAR MAINTENANCE EXPENSES (private, expense approvals)
+- **Maintenance Flex:** auto-pushed on every submission — venue header, area, title, Thai translation, images (clickable), video/audio/PDF indicators, requester, timestamp, REQ_ID, "Photos / Videos" button
+- **Expense Flex:** sent to expense group only — gold header, English only, amount in Cinnamon Wood, expense details, APPROVE button (Olive Leaf), FILES button pointing to expense media folder
+- **Approval flow:** APPROVE button → two-step confirmation page (enter name → confirm) → marks APPROVED in sheet → sends "APPROVED by [NAME]" Flex to expense group
+- **Image thumbnails in Flex:** `sendLineAfterUpload()` reads Drive folder after uploads complete, includes up to 4 clickable images in the Flex card
+- **Non-image media:** video/audio/PDF indicators shown as text labels when non-image files are attached
+- **Test functions** (`testLineFlex`, `testLineFlexWithImages`): always route to test group, never production
 
-**✅ LINE Flex Messages — WORKING**
-- LINE Messaging API integrated (`Line.js`): Flex Message auto-pushed to LINE group on every submission
-- Flex card includes: venue header, area, title, Thai description, requester, timestamp, REQ_ID, clickable "Photos / Videos" button linking to Drive folder
-- LINE Official Account: "FC MAINTENANCE", Group: "OSKAR MAINTENANCE"
-- Channel Access Token and Group ID stored in `Config.js`
-- `testLineFlex()` confirmed working — message delivered to LINE group
+### Expense Approval Feature
+- **ADMIN users** (JANE for OSKB) see "EXPENSE APPROVAL" section on Page 2A
+- Fields: expense details (free text), total amount (฿), quotation/PDF upload
+- Data written to RAW_INTAKE cols L-N + EXPENSE_APPROVAL sheet (A-L)
+- Expense media folder created in dedicated `EXPENSE_APPROVAL` Drive folder
+- Folder naming: `OSKB_260401_EXP1` (flat, no year/month subfolders)
+- Expense files upload to expense folder (separate from job folder)
+- `doGet()` handles approval links: `?approve=REQID&token=HASH&approver=NAME`
 
-**✅ User management (admin panel)**
-- SENIOR users see a "MANAGE STAFF" button on Page 1 after selecting their name
-- Admin panel: single alphabetically sorted list, seniors marked with ⭐, regulars removable with ✕
+### User Management
+- ADMIN + SENIOR users see "MANAGE STAFF" button on Page 1
+- Single alphabetically sorted list, seniors/admins marked with ⭐, regulars removable with ✕
 - Add new users (always REGULAR, forced uppercase)
-- Changes write directly to USERS tab in Reference spreadsheet
-- `addUser(name)` and `removeUser(name)` server functions in `Webapp.js`
-- `getVenueConfig()` now returns `seniorUsers` array alongside `staffNames`, both sorted A-Z
-- `findVenueUserCol_()` shared helper — checks both VENUE_CODE and venue name as column headers
+- `getVenueConfig()` returns `staffNames`, `seniorUsers`, `adminUsers` — all sorted A-Z
 
-**✅ Confirmation page simplified**
-- No more card generation on Page 3 (LINE handles sharing now)
-- Shows request summary: icon, type, area, title, author, timestamp, REQ_ID
-- "Shared to OSKAR Maintenance LINE group" message
-- "Submit Another" link
-- QR code removed from confirmation flow (was not useful on LINE mobile)
-
-**✅ Demo page hosted on GitHub Pages**
-- `https://jaybkk-dev.github.io/FC_FM/WebApp_Demo.html`
-- Mobile-only (blocks desktop), no backend, generates mock data
-- Repo: `github.com/jaybkk-dev/FC_FM` (public for Pages, `gh-pages` branch has only the demo file)
-
-**✅ Double-HTML fix (again)**
-- `WebApp.html` had reverted to 4112 lines (two concatenated HTML documents)
-- Fixed: extracted first document, removed duplicate DOCTYPE
-
-**✅ Other changes**
-- Desktop banner: "This app works best on phones" (dismissable, screens >800px)
-- Border style in Format.js: changed from DASHED to DOTTED (all horizontal row borders)
-- CLAUDE.md roadmap rewritten with full Asset Registry, multi-venue IMPORTRANGE views, etc.
+### Other Recent Changes
+- **Attachments now mandatory** — form requires title + at least one file
+- **Media buttons fixed** — tested on real device, "Take Photo/Video" opens camera, "Upload File" opens file picker
+- **Two buttons only** — "Photo / Video / File" + "Voice Note" (removed three-button layout)
+- **Confirmation page simplified** — request summary + "Shared to LINE group" message, no card
+- **Desktop banner** — "This app works best on phones" (dismissable)
+- **Brand color palette** — Cinnamon Wood, Pacific Cyan, Oskar Gold, Taupe Grey, Olive Leaf (saved in CLAUDE.md)
+- **Border style** — DOTTED (not DASHED) for all horizontal row borders
+- **EXPENSE_APPROVAL sheet** — added to `formatAllSheets()` and `setupMasterProtections()`
+- **`translateToEnglish_()`** — new function in AI.js for expense Flex (English only)
+- **Demo page** — `https://jaybkk-dev.github.io/FC_FM/WebApp_Demo.html`
 
 ### Setup already completed
-- All 10 `.gs` files deployed (including new `Line.gs`)
-- `WebApp.html` — clean single document, 2221 lines
+- All `.gs` files deployed (AI, Config, Drive, EditTrigger, Format, Line, Menu, Pipeline, Setup, Webapp)
+- `WebApp.html` served via deployed web app
 - `runFullSetup()` and `installEditTrigger()` have been run
 - Clasp auto-push hook active
-- Git initialized, GitHub remote added (`jaybkk-dev/FC_FM`)
+- Git initialized, GitHub remote (`jaybkk-dev/FC_FM`), commits at milestones
 - Spreadsheet timezone: Asia/Bangkok ✅
-- `runSystemCheck()` — all 10 ✅ (ran 9 Mar 2026)
-- LINE webhook: verified via webhook.site, Group ID captured and configured
+- LINE webhook: verified via webhook.site, all Group IDs captured
+- MCP server available for reading spreadsheet data (`LA PATIS - MCP/server.py`)
 
 ### Workflow note
 When using Python/Bash to modify files directly, the PostToolUse hook does NOT auto-push. Run `clasp push --force` manually after such operations.
 
 ### Pending / Not Yet Done
-1. **[BUG] Media picker buttons** — Take Photo/Video and Upload File buttons on Page 2A do not behave correctly on Android. `capture="environment"` behavior varies by device. Need to build a test page with all input variants, have Jay test on his phone, and wire accordingly. **Do NOT guess — real-device testing required.**
-2. **Redeploy to production URL** — Deploy → Manage deployments → Edit → New version → Deploy
-3. **Cleanup test data** — Delete test rows from RAW_INTAKE and REQUESTS, delete test Drive folders, run `resetPropertyCounters()` from Script Editor
-4. **LINE Flex with images** — Delay Flex Message until file uploads complete, include image thumbnails in the message (Jay's preference: one complete message, not instant card + separate images). Move `notifyLineGroup_()` from `submitRequest()` to post-upload callback.
-5. **Auto-save confirmation card to Drive** — future feature
-6. **Clone to other venues** — change `VENUE_CODE` in Config.gs and repeat setup (future)
-7. **Admin page (venue picker)** — extra page for Jay + assistant, venue picker at top (future)
+1. **Expense approval section UI** — white card background not rendering correctly, needs styling fix
+2. **Voice-to-text** — approach TBD (client-side Speech API vs server-side Whisper)
+3. **Dedicated test functions** — most test functions in the CLAUDE.md table not yet built (only `testLineFlex`, `testLineFlexWithImages`, `runSystemCheck` exist)
+4. **Cleanup test data** — delete test rows from RAW_INTAKE/REQUESTS/EXPENSE_APPROVAL, reset counters
+5. **Asset Registry** — Phase 2 (see Roadmap)
+6. **Manager dispatch app** — separate frontend for Jay + assistant to assign/track/close jobs from phone
+7. **Clone to other venues** — change `VENUE_CODE` in Config.gs and repeat setup
 
 ### Known working features
 - Web form submission (maintenance + event support)
 - Job folder creation on Shared Drive with PropertiesService counter
-- REQ_ID generation at submission time (VENUE + YYMMDD + monthly ordinal)
-- Base64 file upload (photos, videos, voice notes, PDFs)
+- REQ_ID generation (VENUE + YYMMDD + monthly ordinal)
+- Base64 file upload (photos, videos, voice notes, PDFs) — mandatory
 - HYPERLINK formula preservation during import
-- AI translation (EN↔TH) and request classification
-- Instant archive (DONE checkbox → moves to COMPLETED)
-- Edit trigger: auto-timestamps, ASSIGNED_TO dropdown, AREA dropdown, toast reminder for manual folder
-- Custom menu (Import, Archive, Quick Add Contractor, Refresh Dropdowns, Auto Import, Create Folder for This Row)
+- AI translation (EN↔TH, TH→EN) and request classification
+- Instant archive (DONE checkbox → COMPLETED)
+- Edit trigger: auto-timestamps, ASSIGNED_TO dropdown, AREA dropdown
+- Custom menu (Import, Archive, Quick Add Contractor, Refresh Dropdowns, Auto Import, Create Folder)
 - Warning-only protections with dispatch columns unprotected
 - Filtered views on Master + Reference spreadsheets
-- **LINE Flex Messages** — auto-push to LINE group on submission (Thai translation, clickable folder link)
-- **User management** — SENIOR users can add/remove staff from the app (alphabetically sorted)
-- **Simplified confirmation page** — request summary + LINE group notification message (no card)
+- **LINE Flex Messages** — maintenance group (Thai, images, media indicators) + expense group (English, approval flow)
+- **Expense approval** — ADMIN form section, EXPENSE_APPROVAL sheet, dedicated Drive folder, two-step approval via LINE
+- **User management** — ADMIN/SENIOR can add/remove staff from the app
+- **Simplified confirmation page** — request summary + LINE notification
 - Desktop banner ("works best on phones")
 
 ### Known issues
-- **Media picker buttons (Page 2A)** — Take Photo/Video and Upload File cross-wiring broken on Android. Needs real-device testing with multiple input variants to determine correct wiring.
+- **Expense section UI** — styling doesn't match mockup (white card not rendering properly on gold background)
+- **Clasp push reliability** — clasp sometimes says "up to date" when it hasn't pushed. Workaround: append a comment to force a diff, then push.
 
 ## Development Roadmap
 
