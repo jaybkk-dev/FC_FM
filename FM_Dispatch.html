@@ -1,0 +1,1757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#EEE7DC">
+<title>FM Dispatch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Jost:wght@200;300;400&family=Roboto+Slab:wght@500;700&family=Lora:ital@1&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+/* ============================================================
+   FM DISPATCH — stylesheet
+   Strictly follows Fat Chili design system.
+   ============================================================ */
+:root {
+  --fc-red: #D81F26;
+  --fc-black: #231F20;
+  --fc-cream: #EEE7DC;
+  --fc-white: #FFFFFF;
+  --ink-100: #231F20;
+  --ink-70: rgba(35, 31, 32, 0.70);
+  --ink-40: rgba(35, 31, 32, 0.40);
+  --line: rgba(35, 31, 32, 0.15);
+  --line-soft: rgba(35, 31, 32, 0.08);
+  --surface: #FFFFFF;
+  --success: #2E7D32;
+  --warning: #C77700;
+  --error: #D81F26;
+  --font-display: 'Jost', sans-serif;
+  --font-heading: 'Roboto Slab', serif;
+  --font-ui: 'Inter', sans-serif;
+  --font-editorial: 'Lora', serif;
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+  --space-5: 20px; --space-6: 24px; --space-8: 32px; --space-10: 40px;
+  --space-12: 48px; --space-16: 64px;
+  --nav-height: 64px;
+  --topbar-height: 56px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; }
+body {
+  font-family: var(--font-ui);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--ink-100);
+  background: var(--fc-cream);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+button { font-family: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+input, textarea, select { font-family: inherit; font-size: 15px; color: var(--ink-100); }
+a { color: inherit; text-decoration: none; }
+ul, ol { list-style: none; }
+
+/* === Typography === */
+.t-display { font-family: var(--font-display); font-weight: 300; font-size: 48px; line-height: 1.1; letter-spacing: 0.15em; }
+.t-h1 { font-family: var(--font-heading); font-weight: 700; font-size: 32px; line-height: 1.2; }
+.t-h2 { font-family: var(--font-heading); font-weight: 700; font-size: 24px; line-height: 1.25; }
+.t-h3 { font-family: var(--font-ui); font-weight: 600; font-size: 18px; line-height: 1.3; }
+.t-body { font-family: var(--font-ui); font-weight: 400; font-size: 15px; line-height: 1.5; }
+.t-small { font-family: var(--font-ui); font-weight: 400; font-size: 13px; line-height: 1.45; color: var(--ink-70); }
+.t-label { font-family: var(--font-ui); font-weight: 600; font-size: 12px; line-height: 1.2; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-70); }
+.t-tagline { font-family: var(--font-editorial); font-style: italic; font-size: 20px; line-height: 1.3; }
+
+/* === App shell === */
+#app { width: 100vw; height: 100vh; display: flex; flex-direction: column; background: var(--fc-cream); }
+
+/* Login */
+.login-screen {
+  position: fixed; inset: 0; background: var(--fc-cream);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: var(--space-6); z-index: 100;
+}
+.login-screen.hidden { display: none; }
+.login-logo { margin-bottom: var(--space-8); text-align: center; }
+.login-logo .chili { width: 64px; height: 64px; margin: 0 auto var(--space-4); display: block; }
+.login-logo .brand { font-family: var(--font-display); font-weight: 300; font-size: 32px; letter-spacing: 0.15em; color: var(--fc-black); }
+.login-title { font-family: var(--font-heading); font-weight: 700; font-size: 28px; margin-bottom: var(--space-2); }
+.login-tag { font-family: var(--font-editorial); font-style: italic; font-size: 16px; color: var(--ink-70); margin-bottom: var(--space-10); }
+.login-prompt { font-family: var(--font-ui); font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-70); margin-bottom: var(--space-4); }
+.login-users { display: flex; gap: var(--space-3); width: 100%; max-width: 320px; }
+.login-users .btn { flex: 1; }
+
+/* Top bar */
+.topbar {
+  height: var(--topbar-height); flex-shrink: 0;
+  background: var(--fc-cream);
+  border-bottom: 1px solid var(--line);
+  display: flex; align-items: center; padding: 0 var(--space-5); gap: var(--space-3);
+  position: relative; z-index: 20;
+}
+.topbar .title { font-family: var(--font-heading); font-weight: 700; font-size: 18px; flex-shrink: 0; }
+.topbar .spacer { flex: 1; }
+.venue-chip {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  height: 32px; padding: 0 var(--space-3);
+  background: var(--fc-white); border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  font-size: 13px; font-weight: 500; color: var(--ink-100);
+}
+.venue-chip i { width: 14px; height: 14px; color: var(--ink-70); }
+.user-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--fc-black); color: var(--fc-cream);
+  display: grid; place-items: center;
+  font-size: 12px; font-weight: 600; letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+/* Pages */
+.pages { flex: 1; overflow: hidden; position: relative; }
+.page {
+  position: absolute; inset: 0;
+  overflow-y: auto; overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding: var(--space-5) var(--space-5) calc(var(--nav-height) + var(--space-6));
+  display: none;
+}
+.page.active { display: block; }
+.page > section { margin-bottom: var(--space-8); }
+.page-title { font-family: var(--font-heading); font-weight: 700; font-size: 24px; margin-bottom: var(--space-2); }
+.page-sub { color: var(--ink-70); font-size: 13px; margin-bottom: var(--space-5); }
+.section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-3); }
+.section-head .t-label { margin: 0; }
+
+/* Bottom nav */
+.bottom-nav {
+  height: var(--nav-height); flex-shrink: 0;
+  background: var(--fc-white); border-top: 1px solid var(--line);
+  display: grid; grid-template-columns: repeat(5, 1fr);
+  padding-bottom: env(safe-area-inset-bottom);
+  z-index: 20;
+}
+.nav-tab {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px; color: var(--ink-70);
+  position: relative; padding-top: 2px;
+  transition: color 0.1s;
+}
+.nav-tab i { width: 22px; height: 22px; }
+.nav-tab span { font-size: 11px; font-weight: 500; }
+.nav-tab.active { color: var(--fc-black); }
+.nav-tab.active::before {
+  content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 32px; height: 2px; background: var(--fc-red);
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
+  height: 40px; padding: 0 var(--space-4); border-radius: var(--radius-sm);
+  font-family: var(--font-ui); font-weight: 500; font-size: 14px;
+  transition: background 0.1s, border 0.1s;
+}
+.btn.primary { background: var(--fc-red); color: var(--fc-cream); }
+.btn.primary:hover { background: #B4181E; }
+.btn.secondary { background: transparent; color: var(--fc-black); border: 1px solid var(--fc-black); }
+.btn.secondary:hover { background: var(--line-soft); }
+.btn.tertiary { background: transparent; color: var(--fc-black); }
+.btn.tertiary:hover { background: var(--line-soft); }
+.btn.destructive { background: var(--fc-black); color: var(--fc-cream); }
+.btn.destructive:hover { background: #000; }
+.btn.compact { height: 32px; padding: 0 var(--space-3); font-size: 13px; }
+.btn.prominent { height: 48px; font-size: 15px; }
+.btn.block { display: flex; width: 100%; }
+.btn i { width: 16px; height: 16px; }
+.btn:disabled { background: var(--line-soft); color: var(--ink-40); cursor: not-allowed; }
+
+/* Inputs */
+.input, .textarea, .select {
+  width: 100%; background: var(--fc-white);
+  border: 1px solid var(--line); border-radius: var(--radius-sm);
+  padding: 10px 12px; height: 40px;
+  font-size: 15px; color: var(--ink-100);
+}
+.input:focus, .textarea:focus, .select:focus { outline: none; border: 1.5px solid var(--fc-red); padding: 9.5px 11.5px; }
+.textarea { height: auto; min-height: 80px; padding: 10px 12px; resize: vertical; }
+.select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23231F20' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+.field { margin-bottom: var(--space-4); }
+.field label { display: block; margin-bottom: var(--space-2); }
+.field .helper { font-size: 13px; color: var(--ink-70); margin-top: var(--space-1); }
+
+/* Cards */
+.card {
+  background: var(--fc-white); border: 1px solid rgba(35,31,32,0.10);
+  border-radius: var(--radius-md); padding: var(--space-5);
+}
+.card.compact { padding: var(--space-4); }
+.card + .card { margin-top: var(--space-3); }
+
+/* Priority pill */
+.priority {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 22px; padding: 0 10px;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+  border-radius: 2px;
+}
+.priority.critical { background: var(--fc-red); color: var(--fc-cream); }
+.priority.urgent { background: var(--warning); color: var(--fc-cream); }
+.priority.moderate { background: var(--line); color: var(--ink-100); }
+.priority.low { background: var(--line-soft); color: var(--ink-70); }
+
+/* Venue badge */
+.venue-badge {
+  display: inline-flex; align-items: center;
+  height: 22px; padding: 0 8px;
+  font-family: var(--font-ui); font-weight: 600; font-size: 11px; letter-spacing: 0.08em;
+  background: var(--fc-black); color: var(--fc-cream); border-radius: 2px;
+}
+
+/* Status chip (neutral) */
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 22px; padding: 0 8px;
+  font-size: 11px; font-weight: 500; color: var(--ink-70);
+  background: var(--line-soft); border-radius: 2px;
+}
+.chip i { width: 12px; height: 12px; }
+.chip.ink { background: var(--fc-black); color: var(--fc-cream); }
+.chip.red { background: rgba(216,31,38,0.10); color: var(--fc-red); }
+
+/* KPI tiles */
+.kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+.kpi {
+  background: var(--fc-white); border: 1px solid rgba(35,31,32,0.10);
+  border-radius: var(--radius-md); padding: var(--space-4);
+}
+.kpi .kpi-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-70); margin-bottom: var(--space-2); }
+.kpi .kpi-number { font-family: var(--font-heading); font-weight: 700; font-size: 32px; line-height: 1; color: var(--fc-black); }
+.kpi .kpi-sub { font-size: 12px; color: var(--ink-70); margin-top: var(--space-1); }
+.kpi.alert .kpi-number { color: var(--fc-red); }
+
+/* Priority counters row */
+.prio-counters { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-2); margin-top: var(--space-2); }
+.prio-counter { background: var(--fc-white); border: 1px solid rgba(35,31,32,0.10); padding: var(--space-3) var(--space-2); text-align: center; border-radius: var(--radius-md); }
+.prio-counter .num { font-family: var(--font-heading); font-weight: 700; font-size: 20px; }
+.prio-counter .lbl { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-70); margin-top: 2px; }
+.prio-counter.critical .num { color: var(--fc-red); }
+.prio-counter.urgent .num { color: var(--warning); }
+
+/* Activity feed */
+.activity { list-style: none; padding: 0; }
+.activity li {
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--line-soft);
+  display: flex; gap: var(--space-3);
+  font-size: 14px;
+}
+.activity li:last-child { border-bottom: none; }
+.activity .act-icon { width: 28px; height: 28px; border-radius: 50%; background: var(--line-soft); display: grid; place-items: center; flex-shrink: 0; }
+.activity .act-icon i { width: 14px; height: 14px; color: var(--ink-70); }
+.activity .act-body { flex: 1; min-width: 0; }
+.activity .act-who { font-weight: 600; }
+.activity .act-when { font-size: 12px; color: var(--ink-70); margin-top: 2px; }
+
+/* Job cards */
+.filter-bar {
+  display: flex; gap: var(--space-2); overflow-x: auto;
+  padding-bottom: var(--space-3); margin-bottom: var(--space-3);
+  border-bottom: 1px solid var(--line-soft);
+  scrollbar-width: none;
+}
+.filter-bar::-webkit-scrollbar { display: none; }
+.filter-chip {
+  flex-shrink: 0; height: 32px; padding: 0 var(--space-3);
+  background: var(--fc-white); border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  font-size: 13px; font-weight: 500; color: var(--ink-100);
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.filter-chip.active { background: var(--fc-black); color: var(--fc-cream); border-color: var(--fc-black); }
+.filter-chip i { width: 14px; height: 14px; }
+
+.job-card {
+  background: var(--fc-white); border: 1px solid rgba(35,31,32,0.10);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-3);
+  padding: var(--space-4);
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+.job-card::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+  background: var(--line);
+}
+.job-card.critical::before { background: var(--fc-red); }
+.job-card.urgent::before { background: var(--warning); }
+.job-card.moderate::before { background: var(--ink-70); }
+.job-card.low::before { background: var(--ink-40); }
+.job-card .jc-head { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2); flex-wrap: wrap; }
+.job-card .jc-req { font-family: var(--font-ui); font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: var(--ink-70); }
+.job-card .jc-title { font-family: var(--font-ui); font-weight: 600; font-size: 15px; margin-bottom: var(--space-1); }
+.job-card .jc-details { font-size: 13px; color: var(--ink-70); display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.job-card .jc-foot { display: flex; align-items: center; gap: var(--space-2); margin-top: var(--space-3); flex-wrap: wrap; font-size: 12px; color: var(--ink-70); }
+.job-card .jc-foot i { width: 13px; height: 13px; }
+.job-card .jc-foot .unassigned { color: var(--ink-40); font-style: italic; }
+
+.empty-state { text-align: center; padding: var(--space-12) var(--space-4); color: var(--ink-70); }
+.empty-state i { width: 36px; height: 36px; color: var(--ink-40); margin-bottom: var(--space-3); }
+
+/* Job Detail overlay */
+.job-detail-overlay {
+  position: fixed; inset: 0; background: var(--fc-cream);
+  z-index: 30; display: none; flex-direction: column;
+}
+.job-detail-overlay.active { display: flex; }
+.jd-topbar { height: var(--topbar-height); flex-shrink: 0; background: var(--fc-cream); border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: var(--space-3); padding: 0 var(--space-4); }
+.jd-topbar .back { width: 40px; height: 40px; display: grid; place-items: center; margin-left: -8px; }
+.jd-topbar .req { font-family: var(--font-ui); font-size: 12px; font-weight: 600; letter-spacing: 0.08em; color: var(--ink-70); }
+.jd-topbar .spacer { flex: 1; }
+.jd-body { flex: 1; overflow-y: auto; padding: var(--space-5) var(--space-5) var(--space-12); }
+.jd-hero { margin-bottom: var(--space-5); }
+.jd-hero-meta { display: flex; gap: var(--space-2); margin-bottom: var(--space-3); flex-wrap: wrap; }
+.jd-title { font-family: var(--font-heading); font-weight: 700; font-size: 22px; line-height: 1.25; margin-bottom: var(--space-2); }
+.jd-area { font-size: 13px; color: var(--ink-70); margin-bottom: var(--space-4); }
+
+.photo-strip { display: flex; gap: var(--space-2); overflow-x: auto; margin-bottom: var(--space-5); scrollbar-width: none; }
+.photo-strip::-webkit-scrollbar { display: none; }
+.photo-thumb { flex-shrink: 0; width: 160px; height: 120px; background: var(--line-soft); border-radius: var(--radius-md); position: relative; overflow: hidden; display: grid; place-items: center; color: var(--ink-40); }
+.photo-thumb i { width: 24px; height: 24px; }
+.photo-thumb.has-img { background-size: cover; background-position: center; }
+.photo-thumb .count-pill { position: absolute; top: 8px; right: 8px; background: var(--fc-black); color: var(--fc-cream); font-size: 10px; padding: 2px 6px; border-radius: 2px; }
+
+.lang-switch { display: inline-flex; background: var(--line-soft); border-radius: var(--radius-sm); padding: 2px; margin-bottom: var(--space-3); }
+.lang-switch button { height: 28px; padding: 0 var(--space-3); font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: var(--ink-70); border-radius: 2px; }
+.lang-switch button.active { background: var(--fc-white); color: var(--fc-black); }
+.details-text { font-size: 15px; line-height: 1.55; color: var(--ink-100); white-space: pre-wrap; }
+
+.dispatch-row {
+  display: flex; align-items: flex-start; gap: var(--space-3);
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+.dispatch-row:last-child { border-bottom: none; }
+.dispatch-row .dr-icon { width: 20px; height: 20px; color: var(--ink-70); margin-top: 2px; flex-shrink: 0; }
+.dispatch-row .dr-body { flex: 1; min-width: 0; }
+.dispatch-row .dr-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-70); margin-bottom: var(--space-1); }
+.dispatch-row .dr-value { font-size: 15px; }
+.dispatch-row .dr-value.empty { color: var(--ink-40); font-style: italic; }
+.dispatch-row .dr-actions { display: flex; gap: var(--space-2); margin-top: var(--space-2); flex-wrap: wrap; }
+
+.jd-actions { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); margin-top: var(--space-6); }
+.jd-actions .btn { width: 100%; }
+.jd-actions .btn.full { grid-column: 1 / -1; }
+
+.history {
+  margin-top: var(--space-6);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--line);
+}
+.history li { padding: var(--space-2) 0; font-size: 13px; color: var(--ink-70); display: flex; gap: var(--space-3); }
+.history li .hx-time { color: var(--ink-40); flex-shrink: 0; width: 90px; font-size: 12px; }
+.history li .hx-body { flex: 1; }
+.history li .hx-body strong { color: var(--ink-100); font-weight: 600; }
+
+/* Calendar */
+.cal-head { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-4); }
+.cal-head .month { font-family: var(--font-heading); font-weight: 700; font-size: 20px; flex: 1; }
+.cal-head .icon-btn { width: 36px; height: 36px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--fc-white); }
+.cal-head .icon-btn i { width: 18px; height: 18px; }
+
+.cal-grid {
+  background: var(--fc-white); border: 1px solid rgba(35,31,32,0.10);
+  border-radius: var(--radius-md); overflow: hidden;
+}
+.cal-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); background: var(--line-soft); }
+.cal-weekdays div { text-align: center; padding: var(--space-2) 0; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-70); }
+.cal-days { display: grid; grid-template-columns: repeat(7, 1fr); }
+.cal-day {
+  min-height: 72px; padding: 4px; border-right: 1px solid var(--line-soft); border-bottom: 1px solid var(--line-soft);
+  font-size: 12px; position: relative; background: var(--fc-white);
+}
+.cal-day.other { background: var(--line-soft); color: var(--ink-40); }
+.cal-day:nth-child(7n) { border-right: none; }
+.cal-day .d-num { text-align: right; font-size: 12px; font-weight: 500; color: var(--ink-70); }
+.cal-day.today .d-num { color: var(--fc-red); font-weight: 700; }
+.cal-day.today .d-num::after { content: ''; display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: var(--fc-red); margin-left: 4px; vertical-align: middle; }
+.cal-day .leave-strip { background: rgba(35,31,32,0.15); color: var(--ink-100); font-size: 9px; font-weight: 600; letter-spacing: 0.05em; padding: 1px 3px; border-radius: 1px; margin-top: 2px; text-transform: uppercase; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cal-day .leave-strip.sick { background: rgba(35,31,32,0.30); color: var(--fc-cream); }
+.cal-day .leave-strip.ph { background: rgba(216,31,38,0.20); color: var(--fc-red); }
+.cal-day .job-dot { display: flex; gap: 2px; margin-top: 2px; flex-wrap: wrap; }
+.cal-day .job-dot span { width: 5px; height: 5px; border-radius: 50%; background: var(--ink-70); }
+.cal-day .job-dot span.critical { background: var(--fc-red); }
+.cal-day .job-dot span.urgent { background: var(--warning); }
+
+.cal-legend { display: flex; gap: var(--space-4); margin-top: var(--space-4); flex-wrap: wrap; font-size: 12px; color: var(--ink-70); }
+.cal-legend .lg-item { display: inline-flex; align-items: center; gap: 6px; }
+.cal-legend .lg-sw { width: 12px; height: 12px; border-radius: 2px; }
+
+/* Purchases segmented control */
+.segmented {
+  display: flex; background: var(--line-soft); padding: 2px; border-radius: var(--radius-sm);
+  margin-bottom: var(--space-4);
+}
+.segmented button { flex: 1; height: 32px; font-size: 12px; font-weight: 600; letter-spacing: 0.04em; color: var(--ink-70); border-radius: 2px; }
+.segmented button.active { background: var(--fc-white); color: var(--fc-black); }
+
+.pr-card { position: relative; }
+.pr-head { display: flex; align-items: flex-start; gap: var(--space-3); }
+.pr-head .thumb { width: 56px; height: 56px; background: var(--line-soft); border-radius: var(--radius-sm); background-size: cover; background-position: center; flex-shrink: 0; }
+.pr-head .info { flex: 1; min-width: 0; }
+.pr-title { font-weight: 600; font-size: 15px; }
+.pr-meta { font-size: 12px; color: var(--ink-70); margin-top: 2px; }
+.pr-amount { font-family: var(--font-heading); font-weight: 700; font-size: 18px; text-align: right; }
+.pr-foot { display: flex; align-items: center; gap: var(--space-2); margin-top: var(--space-4); flex-wrap: wrap; }
+
+/* FC Stamp */
+.fc-stamp {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 54px; height: 36px;
+  background: var(--fc-red); color: var(--fc-cream);
+  font-family: var(--font-heading); font-weight: 700; font-size: 16px;
+  letter-spacing: 0.1em;
+  transform: rotate(-6deg);
+  border-radius: 2px;
+  position: relative;
+  user-select: none;
+}
+.fc-stamp::after {
+  content: attr(data-label);
+  position: absolute; bottom: -2px; left: 50%; transform: translateX(-50%);
+  font-size: 7px; letter-spacing: 0.12em; font-weight: 700;
+}
+.fc-stamp.sm { width: 40px; height: 28px; font-size: 12px; }
+.pr-card .fc-stamp-corner { position: absolute; top: var(--space-3); right: var(--space-3); }
+
+/* Directory */
+.dir-list li {
+  display: flex; align-items: center; gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+.dir-list li:last-child { border-bottom: none; }
+.dir-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--fc-black); color: var(--fc-cream); display: grid; place-items: center; font-weight: 600; font-size: 13px; flex-shrink: 0; letter-spacing: 0.04em; }
+.dir-info { flex: 1; min-width: 0; }
+.dir-name { font-weight: 600; font-size: 15px; }
+.dir-role { font-size: 12px; color: var(--ink-70); margin-top: 1px; }
+.dir-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.dir-actions .icon-btn { width: 36px; height: 36px; display: grid; place-items: center; background: var(--fc-white); border: 1px solid var(--line); border-radius: var(--radius-sm); }
+.dir-actions .icon-btn i { width: 16px; height: 16px; }
+.dir-actions .icon-btn.red i { color: var(--fc-red); }
+
+.fab {
+  position: fixed; right: var(--space-5); bottom: calc(var(--nav-height) + var(--space-5) + env(safe-area-inset-bottom, 0px));
+  width: 52px; height: 52px; border-radius: 50%;
+  background: var(--fc-red); color: var(--fc-cream);
+  display: grid; place-items: center;
+  box-shadow: 0 2px 8px rgba(35,31,32,0.20);
+  z-index: 15;
+}
+.fab i { width: 22px; height: 22px; }
+
+/* Overtime */
+.ot-tech-card {
+  background: var(--fc-white); border: 1px solid rgba(35,31,32,0.10);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin-bottom: var(--space-3);
+  display: flex; align-items: center; gap: var(--space-3);
+}
+.ot-tech-card .ot-info { flex: 1; min-width: 0; }
+.ot-tech-card .ot-name { font-weight: 600; font-size: 15px; }
+.ot-tech-card .ot-sub { font-size: 12px; color: var(--ink-70); }
+.ot-tech-card .ot-amount { text-align: right; }
+.ot-tech-card .ot-hrs { font-family: var(--font-heading); font-weight: 700; font-size: 20px; }
+.ot-tech-card .ot-lbl { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-70); }
+
+/* Settings */
+.settings-row {
+  display: flex; align-items: center; gap: var(--space-3);
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+.settings-row:last-child { border-bottom: none; }
+.settings-row i { width: 18px; height: 18px; color: var(--ink-70); }
+.settings-row .sr-label { flex: 1; font-size: 15px; }
+.settings-row .sr-value { font-size: 13px; color: var(--ink-70); }
+
+.menu-list { background: var(--fc-white); border: 1px solid rgba(35,31,32,0.10); border-radius: var(--radius-md); overflow: hidden; }
+.menu-list li { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-4); border-bottom: 1px solid var(--line-soft); font-size: 15px; cursor: pointer; }
+.menu-list li:last-child { border-bottom: none; }
+.menu-list li i { width: 18px; height: 18px; color: var(--ink-70); }
+.menu-list li .chevron { margin-left: auto; color: var(--ink-40); width: 16px; height: 16px; }
+.menu-list li:active { background: var(--line-soft); }
+
+/* Modal / bottom sheet */
+.overlay {
+  position: fixed; inset: 0;
+  background: rgba(35,31,32,0.50);
+  display: none;
+  z-index: 40;
+}
+.overlay.active { display: block; }
+.modal {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: var(--fc-white);
+  border-top-left-radius: var(--radius-md); border-top-right-radius: var(--radius-md);
+  padding: var(--space-5) var(--space-5) calc(var(--space-5) + env(safe-area-inset-bottom, 0px));
+  max-height: 85vh; overflow-y: auto;
+  z-index: 50;
+  transform: translateY(100%);
+  transition: transform 0.22s ease-out;
+}
+.modal.active { transform: translateY(0); }
+.modal .modal-handle { width: 36px; height: 4px; background: var(--line); border-radius: 2px; margin: 0 auto var(--space-4); }
+.modal .modal-title { font-family: var(--font-heading); font-weight: 700; font-size: 20px; margin-bottom: var(--space-4); }
+.modal-options { display: flex; flex-direction: column; gap: var(--space-1); max-height: 50vh; overflow-y: auto; }
+.modal-option { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3); border-radius: var(--radius-sm); cursor: pointer; }
+.modal-option:hover { background: var(--line-soft); }
+.modal-option.selected { background: rgba(216,31,38,0.05); }
+.modal-option.selected .mo-name { color: var(--fc-red); }
+.modal-option .mo-main { flex: 1; min-width: 0; }
+.modal-option .mo-name { font-weight: 500; font-size: 15px; }
+.modal-option .mo-sub { font-size: 12px; color: var(--ink-70); margin-top: 1px; }
+.modal-option .mo-icon { width: 36px; height: 36px; border-radius: 50%; background: var(--line-soft); display: grid; place-items: center; font-size: 13px; font-weight: 600; flex-shrink: 0; color: var(--ink-70); }
+
+.modal-actions { display: flex; gap: var(--space-3); margin-top: var(--space-5); }
+.modal-actions .btn { flex: 1; }
+
+/* Toast */
+.toast-container { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(var(--nav-height) + var(--space-4) + env(safe-area-inset-bottom, 0px)); z-index: 100; pointer-events: none; }
+.toast { background: var(--fc-black); color: var(--fc-cream); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); border-left: 4px solid var(--ink-70); font-size: 14px; margin-bottom: var(--space-2); max-width: 320px; box-shadow: 0 4px 12px rgba(35,31,32,0.20); pointer-events: auto; opacity: 0; transform: translateY(10px); transition: opacity 0.2s, transform 0.2s; }
+.toast.visible { opacity: 1; transform: translateY(0); }
+.toast.success { border-left-color: var(--success); }
+.toast.error { border-left-color: var(--error); }
+.toast.warning { border-left-color: var(--warning); }
+
+/* Utility */
+.row { display: flex; align-items: center; gap: var(--space-2); }
+.row.between { justify-content: space-between; }
+.row.wrap { flex-wrap: wrap; }
+.hstack { display: flex; gap: var(--space-2); }
+.vstack { display: flex; flex-direction: column; gap: var(--space-2); }
+.mt-2 { margin-top: var(--space-2); } .mt-3 { margin-top: var(--space-3); } .mt-4 { margin-top: var(--space-4); } .mt-5 { margin-top: var(--space-5); }
+.mb-2 { margin-bottom: var(--space-2); } .mb-3 { margin-bottom: var(--space-3); } .mb-4 { margin-bottom: var(--space-4); } .mb-5 { margin-bottom: var(--space-5); }
+.text-right { text-align: right; }
+.text-red { color: var(--fc-red); }
+.text-muted { color: var(--ink-70); }
+.hidden { display: none !important; }
+.icon-btn { display: inline-flex; align-items: center; justify-content: center; }
+
+/* Divider */
+.divider { height: 1px; background: var(--line); margin: var(--space-5) 0; }
+
+/* Desktop */
+@media (min-width: 720px) {
+  #app { max-width: 480px; margin: 0 auto; border-left: 1px solid var(--line); border-right: 1px solid var(--line); }
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================ LOGIN ============================================================ -->
+<div id="loginScreen" class="login-screen">
+  <div class="login-logo">
+    <svg class="chili" viewBox="0 0 64 64" fill="none">
+      <path d="M32 8 C 35 10 34 14 32 16 C 30 14 29 10 32 8 Z" fill="#4A3428"/>
+      <path d="M32 14 C 44 16 52 28 50 42 C 48 54 38 58 30 56 C 20 54 14 44 16 32 C 18 22 26 14 32 14 Z" fill="#D81F26"/>
+    </svg>
+    <div class="brand">FATCHILI</div>
+  </div>
+  <div class="login-title">FM Dispatch</div>
+  <div class="login-tag">Facilities management, from anywhere</div>
+  <div class="login-prompt">Who's using the app?</div>
+  <div class="login-users">
+    <button class="btn secondary block" onclick="login('PAO')">Pao</button>
+    <button class="btn secondary block" onclick="login('JAY')">Jay</button>
+  </div>
+</div>
+
+<!-- ============================================================ APP SHELL ============================================================ -->
+<div id="app" style="display:none">
+
+  <!-- Top bar -->
+  <header class="topbar">
+    <div class="title">FM Dispatch</div>
+    <div class="spacer"></div>
+    <button class="venue-chip" onclick="openVenuePicker()">
+      <i data-lucide="filter"></i>
+      <span id="venueChipLabel">All venues</span>
+    </button>
+    <div class="user-avatar" id="userAvatar" onclick="navTo('settings')">JY</div>
+  </header>
+
+  <!-- Pages -->
+  <div class="pages">
+
+    <!-- HOME / DASHBOARD -->
+    <section class="page active" data-page="home">
+      <div class="page-title">Today</div>
+      <div class="page-sub" id="homeDate"></div>
+
+      <section>
+        <div class="kpi-grid">
+          <div class="kpi"><div class="kpi-label">Open jobs</div><div class="kpi-number" id="kpiOpen">—</div><div class="kpi-sub">across all venues</div></div>
+          <div class="kpi alert"><div class="kpi-label">Unassigned</div><div class="kpi-number" id="kpiUnassigned">—</div><div class="kpi-sub">need attention</div></div>
+          <div class="kpi"><div class="kpi-label">Scheduled today</div><div class="kpi-number" id="kpiToday">—</div><div class="kpi-sub">on the calendar</div></div>
+          <div class="kpi"><div class="kpi-label">Overdue</div><div class="kpi-number" id="kpiOverdue">—</div><div class="kpi-sub">past appointment</div></div>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <div class="t-label">By priority</div>
+          <button class="btn compact tertiary" onclick="navTo('jobs')">View all →</button>
+        </div>
+        <div class="prio-counters">
+          <div class="prio-counter critical" onclick="filterJobsBy('priority','CRITICAL')"><div class="num" id="pCritical">0</div><div class="lbl">Critical</div></div>
+          <div class="prio-counter urgent" onclick="filterJobsBy('priority','URGENT')"><div class="num" id="pUrgent">0</div><div class="lbl">Urgent</div></div>
+          <div class="prio-counter" onclick="filterJobsBy('priority','MODERATE')"><div class="num" id="pModerate">0</div><div class="lbl">Moderate</div></div>
+          <div class="prio-counter" onclick="filterJobsBy('priority','LOW')"><div class="num" id="pLow">0</div><div class="lbl">Low</div></div>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-head"><div class="t-label">Recent activity</div></div>
+        <ul class="activity" id="activityFeed"></ul>
+      </section>
+    </section>
+
+    <!-- JOBS -->
+    <section class="page" data-page="jobs">
+      <div class="page-title">Jobs</div>
+      <div class="filter-bar" id="filterBar">
+        <button class="filter-chip active" data-filter="status" data-value="OPEN"><i data-lucide="list"></i>All open</button>
+        <button class="filter-chip" data-filter="status" data-value="UNASSIGNED"><i data-lucide="user-x"></i>Unassigned</button>
+        <button class="filter-chip" data-filter="status" data-value="SCHEDULED"><i data-lucide="calendar-clock"></i>Scheduled</button>
+        <button class="filter-chip" data-filter="status" data-value="OVERDUE"><i data-lucide="alert-triangle"></i>Overdue</button>
+        <button class="filter-chip" data-filter="status" data-value="DONE"><i data-lucide="check-circle-2"></i>Done</button>
+      </div>
+      <div id="jobsList"></div>
+    </section>
+
+    <!-- CALENDAR -->
+    <section class="page" data-page="calendar">
+      <div class="page-title">Calendar</div>
+      <div class="cal-head">
+        <button class="icon-btn" onclick="shiftMonth(-1)"><i data-lucide="chevron-left"></i></button>
+        <div class="month" id="calMonthLabel">—</div>
+        <button class="icon-btn" onclick="shiftMonth(1)"><i data-lucide="chevron-right"></i></button>
+        <button class="icon-btn" onclick="calToday()"><i data-lucide="calendar-check"></i></button>
+      </div>
+      <div class="cal-grid">
+        <div class="cal-weekdays"><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div></div>
+        <div class="cal-days" id="calDays"></div>
+      </div>
+      <div class="cal-legend">
+        <div class="lg-item"><span class="lg-sw" style="background:rgba(35,31,32,0.15)"></span>PTO</div>
+        <div class="lg-item"><span class="lg-sw" style="background:rgba(216,31,38,0.20)"></span>Public holiday</div>
+        <div class="lg-item"><span class="lg-sw" style="background:rgba(35,31,32,0.30)"></span>Sick</div>
+        <div class="lg-item"><span class="lg-sw" style="background:var(--fc-red); border-radius:50%; width:8px; height:8px;"></span>Critical job</div>
+        <div class="lg-item"><span class="lg-sw" style="background:var(--warning); border-radius:50%; width:8px; height:8px;"></span>Urgent job</div>
+        <div class="lg-item"><span class="lg-sw" style="background:var(--ink-70); border-radius:50%; width:8px; height:8px;"></span>Scheduled job</div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="section-head">
+        <div class="t-label">Log leave</div>
+        <button class="btn compact secondary" onclick="openLeaveModal()"><i data-lucide="plus"></i>New leave</button>
+      </div>
+      <ul class="menu-list" id="leaveList"></ul>
+    </section>
+
+    <!-- PURCHASES -->
+    <section class="page" data-page="purchases">
+      <div class="page-title">Purchases</div>
+      <div class="segmented" id="prSeg">
+        <button class="active" data-seg="new">New</button>
+        <button data-seg="approval">Approval</button>
+        <button data-seg="payment">Payment</button>
+        <button data-seg="paid">Paid</button>
+      </div>
+      <div id="prContent"></div>
+    </section>
+
+    <!-- MORE -->
+    <section class="page" data-page="more">
+      <div class="page-title">More</div>
+      <ul class="menu-list">
+        <li onclick="navTo('overtime')"><i data-lucide="clock"></i>Overtime<i class="chevron" data-lucide="chevron-right"></i></li>
+        <li onclick="navTo('directory')"><i data-lucide="users"></i>Directory<i class="chevron" data-lucide="chevron-right"></i></li>
+        <li onclick="navTo('audit')"><i data-lucide="history"></i>Activity log<i class="chevron" data-lucide="chevron-right"></i></li>
+        <li onclick="navTo('settings')"><i data-lucide="settings"></i>Settings<i class="chevron" data-lucide="chevron-right"></i></li>
+      </ul>
+    </section>
+
+    <!-- OVERTIME -->
+    <section class="page" data-page="overtime">
+      <div class="row"><button class="btn tertiary compact" onclick="navTo('more')"><i data-lucide="chevron-left"></i>Back</button></div>
+      <div class="page-title">Overtime</div>
+
+      <div class="segmented" id="otSeg">
+        <button class="active" data-seg="totals">Totals</button>
+        <button data-seg="new">New entry</button>
+        <button data-seg="history">History</button>
+      </div>
+      <div id="otContent"></div>
+    </section>
+
+    <!-- DIRECTORY -->
+    <section class="page" data-page="directory">
+      <div class="row"><button class="btn tertiary compact" onclick="navTo('more')"><i data-lucide="chevron-left"></i>Back</button></div>
+      <div class="page-title">Directory</div>
+
+      <div class="segmented" id="dirSeg">
+        <button class="active" data-seg="technicians">Technicians</button>
+        <button data-seg="contractors">Contractors</button>
+        <button data-seg="suppliers">Suppliers</button>
+      </div>
+      <ul class="dir-list" id="dirList"></ul>
+      <button class="fab" onclick="openNewContactModal()" aria-label="New entry"><i data-lucide="plus"></i></button>
+    </section>
+
+    <!-- AUDIT LOG -->
+    <section class="page" data-page="audit">
+      <div class="row"><button class="btn tertiary compact" onclick="navTo('more')"><i data-lucide="chevron-left"></i>Back</button></div>
+      <div class="page-title">Activity log</div>
+      <div class="page-sub">Every state change across every job, supplier, and payment.</div>
+      <ul class="activity" id="fullActivity"></ul>
+    </section>
+
+    <!-- SETTINGS -->
+    <section class="page" data-page="settings">
+      <div class="row"><button class="btn tertiary compact" onclick="navTo('more')"><i data-lucide="chevron-left"></i>Back</button></div>
+      <div class="page-title">Settings</div>
+
+      <div class="card mb-4">
+        <div class="t-label mb-2">Signed in as</div>
+        <div class="row between">
+          <div class="row">
+            <div class="user-avatar" id="settingsAvatar">JY</div>
+            <div><div style="font-weight:600" id="settingsUser">Jay</div><div class="t-small">Admin</div></div>
+          </div>
+          <button class="btn secondary compact" onclick="logout()">Sign out</button>
+        </div>
+      </div>
+
+      <div class="card mb-4">
+        <div class="t-label mb-2">Venue filter</div>
+        <button class="btn secondary block" onclick="openVenuePicker()">
+          <span id="settingsVenueLabel">All venues</span>
+          <i data-lucide="chevron-down"></i>
+        </button>
+        <div class="t-small mt-2">Applies to Home, Jobs and Calendar views.</div>
+      </div>
+
+      <div class="card">
+        <div class="t-label mb-3">About</div>
+        <div class="settings-row"><i data-lucide="info"></i><div class="sr-label">Version</div><div class="sr-value">v0.1 (mock)</div></div>
+        <div class="settings-row"><i data-lucide="help-circle"></i><div class="sr-label">Support</div><div class="sr-value">jsebag@gmail.com</div></div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Bottom nav -->
+  <nav class="bottom-nav">
+    <button class="nav-tab active" data-nav="home" onclick="navTo('home')"><i data-lucide="home"></i><span>Home</span></button>
+    <button class="nav-tab" data-nav="jobs" onclick="navTo('jobs')"><i data-lucide="clipboard-list"></i><span>Jobs</span></button>
+    <button class="nav-tab" data-nav="calendar" onclick="navTo('calendar')"><i data-lucide="calendar"></i><span>Calendar</span></button>
+    <button class="nav-tab" data-nav="purchases" onclick="navTo('purchases')"><i data-lucide="receipt"></i><span>Purchases</span></button>
+    <button class="nav-tab" data-nav="more" onclick="navTo('more')"><i data-lucide="menu"></i><span>More</span></button>
+  </nav>
+</div>
+
+<!-- ============================================================ JOB DETAIL ============================================================ -->
+<div id="jobDetail" class="job-detail-overlay">
+  <div class="jd-topbar">
+    <button class="back" onclick="closeJobDetail()"><i data-lucide="chevron-left"></i></button>
+    <div class="req" id="jdReq">—</div>
+    <div class="spacer"></div>
+    <button class="back" onclick="toggleJobActions()"><i data-lucide="more-horizontal"></i></button>
+  </div>
+  <div class="jd-body" id="jdBody"></div>
+</div>
+
+<!-- ============================================================ OVERLAYS ============================================================ -->
+<div id="overlay" class="overlay" onclick="closeAllModals()"></div>
+
+<!-- Generic modal -->
+<div id="modal" class="modal">
+  <div class="modal-handle"></div>
+  <div id="modalBody"></div>
+</div>
+
+<!-- Toast container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+/* ============================================================
+   FM DISPATCH — app logic
+   ============================================================ */
+
+/* ---------- Mock data ---------- */
+const VENUES = [
+  { code: 'FLIX', name: "Felix" },
+  { code: 'GIGA', name: "Gigi Asoke" },
+  { code: 'GIGR', name: "Gigi Ristorante" },
+  { code: 'LLFU', name: "Lily Fu's" },
+  { code: 'MRGO', name: "Margo" },
+  { code: 'OSKB', name: "Oskar Bistro" },
+  { code: 'SNGS', name: "Sing Sing Theater" },
+];
+
+const TECHS = [
+  { id: 'TCH001', name: 'CHANG LERT', role: 'Senior technician', phone: '0890000001', line: 'changlert' },
+  { id: 'TCH002', name: 'CHANG YOON', role: 'Technician', phone: '0890000002', line: 'changyoon' },
+  { id: 'TCH003', name: 'CHANG NUHM', role: 'Technician', phone: '0890000003', line: 'changnuhm' },
+  { id: 'HDM004', name: 'HM DETCH', role: 'Handyman (extra)', phone: '0890000004', line: '' },
+];
+
+const CONTRACTORS = [
+  { id: 'WEE001', name: 'Weevarat (Chang Eak)', category: 'HVAC / AIRCON', phone: '0890000100', line: '' },
+  { id: 'REN001', name: 'Rentokil', category: 'Pest control', phone: '025000000', line: '' },
+  { id: 'RAT001', name: 'Rat-Away', category: 'Pest control', phone: '025000001', line: '' },
+  { id: 'CHA001', name: 'Chang Ning', category: 'General construction', phone: '0890000200', line: '' },
+];
+
+const SUPPLIERS = [
+  { id: 'SUP001', name: 'Weerawat Air Service', category: 'AC service', contact: "P'Tim", phone: '0898527011', line: '' },
+  { id: 'SUP002', name: 'Refrigeration Service', category: 'Refrigeration', contact: "P'Prem", phone: '0948018750', line: '' },
+  { id: 'SUP003', name: 'Charoensin Ekamai', category: 'Hardware store', phone: '0813541750', line: '' },
+  { id: 'SUP004', name: 'Asia Electronics Ekamai', category: 'Electrical supplies', phone: '0882770755', line: '' },
+  { id: 'SUP005', name: 'Thai Sang Charoen', category: 'Steel & metals', phone: '0863762357', line: 'https://line.me/R/ti/p/@946koaoq' },
+];
+
+const TASK_CATEGORIES = ['GENERAL MAINTENANCE', 'HVAC / AIRCON', 'REFRIGERATION', 'PLUMBING', 'ELECTRICITY', 'COOKING EQUIPMENT', 'PEST CONTROL'];
+const PRIORITIES = ['CRITICAL', 'URGENT', 'MODERATE', 'LOW'];
+
+// Jobs — based on real REQUESTS data, cleaned (TEST rows removed)
+let JOBS = [
+  { reqId: 'OSKB260401003', ts: '01/04/2026 15:48', venue: 'OSKB', area: 'FL1 KITCHEN', type: 'MAINTENANCE', title: 'Elevator is not running smooth', detailsEn: 'The kitchen has reported that the lift is malfunctioning. Technician quoted 15,200 THB for 8 guide shoe sets. Awaiting approval.', detailsTh: 'ทางครัวแจ้งว่าลิฟท์มีปัญหาขึ้นลงไม่ได้ตามปกติ เสนอราคาเปลี่ยนไกด์ชู 8 ชุด รวม 15,200 บาท', author: 'JANE', category: 'GENERAL MAINTENANCE', priority: 'URGENT', assignedTo: 'TCH001', appointmentTs: '27/04/2026 14:00', notes: 'Wait for parts to arrive.', done: false, photoCount: 3 },
+  { reqId: 'OSKB260402005', ts: '02/04/2026 02:26', venue: 'OSKB', area: 'FL1 KITCHEN', type: 'MAINTENANCE', title: 'AC', detailsEn: 'Compressor is down.', detailsTh: 'คอมเพรสเซอร์เสีย', author: 'JANE', category: 'HVAC / AIRCON', priority: 'CRITICAL', assignedTo: 'WEE001', appointmentTs: '26/04/2026 10:00', notes: 'Bring spare compressor.', done: false, photoCount: 2 },
+  { reqId: 'OSKB260402013', ts: '02/04/2026 07:34', venue: 'OSKB', area: 'F2 DINING ROOM', type: 'MAINTENANCE', title: 'Faucet was broken', detailsEn: "The faucet in the men's restroom near the Oskar sign on the 2nd floor is loose.", detailsTh: 'ก๊อกน้ำห้องน้ำชายฝั่งป้าย oskar ชั้น 2 หัวก๊อกหลุดค่ะ', author: 'TOEY', category: 'PLUMBING', priority: 'URGENT', assignedTo: '', appointmentTs: '', notes: '', done: false, photoCount: 1 },
+  { reqId: 'OSKB260402014', ts: '02/04/2026 07:35', venue: 'OSKB', area: 'FL1 KITCHEN', type: 'MAINTENANCE', title: 'AC', detailsEn: 'Air conditioning issue.', detailsTh: 'ปัญหาเครื่องปรับอากาศ', author: 'JANE', category: 'HVAC / AIRCON', priority: 'URGENT', assignedTo: 'TCH002', appointmentTs: '26/04/2026 15:00', notes: '', done: false, photoCount: 0 },
+  { reqId: 'OSKB260404025', ts: '04/04/2026 16:40', venue: 'OSKB', area: 'F2 BOH', type: 'MAINTENANCE', title: "Door can't open", detailsEn: 'The front door of the elevator on the 2nd floor cannot be opened to the office.', detailsTh: 'ประตูหน้าลิฟชั้น 2 ทางเข้าออฟฟิศเปิดไม่ได้', author: 'NOP', category: 'GENERAL MAINTENANCE', priority: 'URGENT', assignedTo: 'TCH001', appointmentTs: '25/04/2026 11:00', notes: 'Customer wants it before tonight service.', done: false, photoCount: 2 },
+  { reqId: 'OSKB260407027', ts: '07/04/2026 16:30', venue: 'OSKB', area: 'FL1 KITCHEN', type: 'MAINTENANCE', title: 'AC not working', detailsEn: 'Leaking.', detailsTh: 'รั่ว', author: 'JANE', category: 'HVAC / AIRCON', priority: 'URGENT', assignedTo: '', appointmentTs: '', notes: '', done: false, photoCount: 1 },
+  { reqId: 'OSKB260408029', ts: '08/04/2026 01:51', venue: 'OSKB', area: 'FL1 DINING ROOM', type: 'MAINTENANCE', title: "Men's toilets", detailsEn: 'The jar lid is damaged.', detailsTh: 'ฝาโถชำรุด', author: 'TOEY', category: 'GENERAL MAINTENANCE', priority: 'MODERATE', assignedTo: '', appointmentTs: '', notes: '', done: false, photoCount: 0 },
+  { reqId: 'OSKB260408035', ts: '08/04/2026 06:33', venue: 'OSKB', area: 'FL1 DINING ROOM', type: 'MAINTENANCE', title: 'Toilet seat', detailsEn: "The men's restroom toilet lid is broken.", detailsTh: 'ฝาชักโครก​ห้องน้ำผู้ชายชำรุด', author: 'TOEY', category: 'PLUMBING', priority: 'URGENT', assignedTo: '', appointmentTs: '', notes: '', done: false, photoCount: 1 },
+  { reqId: 'OSKB260413039', ts: '13/04/2026 08:57', venue: 'OSKB', area: 'F2 DINING ROOM', type: 'MAINTENANCE', title: 'The light went out', detailsEn: "The light bulb in the women's restroom on the 2nd floor near Deeper is out.", detailsTh: 'หลอดไฟในห้องน้ำหญิงชั้น 2 ฝั่ง deeper ขาดค่ะ', author: 'JANE', category: 'ELECTRICITY', priority: 'URGENT', assignedTo: 'HDM004', appointmentTs: '25/04/2026 09:00', notes: 'Bring spare bulbs.', done: false, photoCount: 0 },
+  { reqId: 'OSKB260416041', ts: '16/04/2026 23:01', venue: 'OSKB', area: 'FL1 KITCHEN', type: 'MAINTENANCE', title: 'Faucet', detailsEn: 'The faucet is broken downstairs in the kitchen next to the gas valve.', detailsTh: 'ก๊อกน้ำหักอยู่ข้างล่างในครัวตรงวาล์วแก๊ส', author: 'ASAMA', category: 'PLUMBING', priority: 'URGENT', assignedTo: '', appointmentTs: '', notes: '', done: false, photoCount: 1 },
+  { reqId: 'OSKB260418043', ts: '18/04/2026 18:38', venue: 'OSKB', area: 'FL1 DINING ROOM', type: 'MAINTENANCE', title: 'Light bulb', detailsEn: "I tried changing all 3 points but it didn't work.", detailsTh: 'ลองเปลี่ยนทั้ง 3 จุดแล้วไม่ติดคะ', author: 'TOEY', category: 'ELECTRICITY', priority: 'URGENT', assignedTo: 'HDM004', appointmentTs: '26/04/2026 09:00', notes: '', done: false, photoCount: 2 },
+  { reqId: 'OSKB260419045', ts: '19/04/2026 18:32', venue: 'OSKB', area: 'FL1 DINING ROOM', type: 'MAINTENANCE', title: 'AC leaking DJ area', detailsEn: "There is a leak at the table next to the DJ. Not sure if it's from AC #4 or #6.", detailsTh: 'น้ำรั่วตรงโต๊ะข้างดีเจค่ะ ไม่แน่ใจว่าเป็นของแอร์เบอร์4 หรือแอร์เบอร์ 6', author: 'SOM', category: 'HVAC / AIRCON', priority: 'URGENT', assignedTo: 'WEE001', appointmentTs: '28/04/2026 13:00', notes: 'Check both units.', done: false, photoCount: 3 },
+  { reqId: 'OSKB260420047', ts: '20/04/2026 11:07', venue: 'OSKB', area: 'F2 KITCHEN', type: 'MAINTENANCE', title: "Refrigerator isn't cool", detailsEn: 'One refrigerator not cooling and one wine fridge.', detailsTh: 'ตู้ไม่เย็น 1 ตู้และตู้ไวน์ 1 ตู้', author: 'JANE', category: 'REFRIGERATION', priority: 'URGENT', assignedTo: '', appointmentTs: '', notes: '', done: false, photoCount: 0 },
+  { reqId: 'OSKB260421049', ts: '21/04/2026 15:32', venue: 'OSKB', area: 'FL1 KITCHEN', type: 'MAINTENANCE', title: 'Sauce warmer was broken', detailsEn: 'Electrical short (issue has been resolved).', detailsTh: 'เครื่องอุ่นซอส สายไฟช็อต (ดำเนินการแก้ไขเรียบร้อย)', author: 'JANE', category: 'COOKING EQUIPMENT', priority: 'URGENT', assignedTo: 'TCH002', appointmentTs: '22/04/2026 10:00', notes: 'Resolved on site.', done: true, completedTs: '22/04/2026 11:30', photoCount: 2 },
+  { reqId: 'OSKB260421051', ts: '21/04/2026 18:48', venue: 'OSKB', area: 'FL1 DINING ROOM', type: 'MAINTENANCE', title: 'Light bulb is out', detailsEn: 'The light bulb has been out for several days. Both inside and outside of the ground floor.', detailsTh: 'หลอดไฟขาด หลายวันแล้วค่ะ ชั้นล่างทั้งด้านในและด้านนอก', author: 'SOM', category: 'ELECTRICITY', priority: 'URGENT', assignedTo: '', appointmentTs: '', notes: '', done: false, photoCount: 1 },
+  { reqId: 'OSKB260424053', ts: '24/04/2026 11:25', venue: 'OSKB', area: 'FL1 KITCHEN', type: 'MAINTENANCE', title: 'AC coil leaking', detailsEn: 'AC in vegetable storage leaking. Technician contacted. Waiting for insurance check and quote.', detailsTh: 'แอร์ในสโตร์เก็บผัก รังผึ้งรั่ว ติดต่อช่างเรียบร้อย รอเช็คประกันและเสนอราคา', author: 'JANE', category: 'HVAC / AIRCON', priority: 'URGENT', assignedTo: 'WEE001', appointmentTs: '', notes: 'Waiting on quote.', done: false, photoCount: 4 },
+  { reqId: 'OSKB260424054', ts: '24/04/2026 11:26', venue: 'OSKB', area: 'F2 KITCHEN', type: 'MAINTENANCE', title: 'AC coil leaking', detailsEn: '2nd floor vegetable storage AC leaking. Waiting for insurance check and quotation.', detailsTh: 'แอร์สโตร์เก็บผักชั้น 2 รังผึ้งรั่ว รอเช็คประกันและใบเสนอราคา', author: 'JANE', category: 'HVAC / AIRCON', priority: 'URGENT', assignedTo: 'WEE001', appointmentTs: '', notes: '', done: false, photoCount: 2 },
+  { reqId: 'OSKB260424057', ts: '24/04/2026 11:30', venue: 'OSKB', area: 'F2 BOH', type: 'MAINTENANCE', title: 'AC', detailsEn: 'Wine storage room AC too cold — causing condensation on 3rd floor. Need heat insulation panels.', detailsTh: 'ห้องเก็บไวน์ชั้น 2 เย็นเกินไป ทำให้พื้นชั้น 3 มีไอน้ำ ต้องติดแผ่นกันความร้อน', author: 'JANE', category: 'HVAC / AIRCON', priority: 'URGENT', assignedTo: '', appointmentTs: '', notes: '', done: false, photoCount: 1 },
+  { reqId: 'OSKB260424061', ts: '24/04/2026 18:29', venue: 'OSKB', area: 'F2 DINING ROOM', type: 'MAINTENANCE', title: 'Broken light', detailsEn: 'The deeper room has lost power completely.', detailsTh: 'ห้อว deeper หลอกไฟดับทั้งราวเลยคะ', author: 'TOEY', category: 'ELECTRICITY', priority: 'CRITICAL', assignedTo: 'TCH001', appointmentTs: '25/04/2026 10:00', notes: 'Before service tonight.', done: false, photoCount: 2 },
+  // A couple across other venues for the demo
+  { reqId: 'FLIX260423017', ts: '23/04/2026 14:20', venue: 'FLIX', area: 'KITCHEN', type: 'MAINTENANCE', title: 'Walk-in door seal', detailsEn: 'Walk-in fridge door seal is torn.', detailsTh: 'ขอบยางประตูห้องเย็นขาด', author: 'KIM', category: 'REFRIGERATION', priority: 'MODERATE', assignedTo: '', appointmentTs: '', notes: '', done: false, photoCount: 1 },
+  { reqId: 'LLFU260424005', ts: '24/04/2026 09:10', venue: 'LLFU', area: 'KITCHEN', type: 'MAINTENANCE', title: 'Gas burner low flame', detailsEn: 'Burner 2 running low flame, possible clog.', detailsTh: 'หัวเตาแก๊ส 2 ไฟเบา', author: 'AOM', category: 'COOKING EQUIPMENT', priority: 'URGENT', assignedTo: 'TCH003', appointmentTs: '26/04/2026 11:00', notes: '', done: false, photoCount: 0 },
+  { reqId: 'GIGR260422001', ts: '22/04/2026 16:45', venue: 'GIGR', area: 'F2 RESTROOMS', type: 'MAINTENANCE', title: 'Tap dripping', detailsEn: 'Second floor restroom tap dripping constantly.', detailsTh: 'ก๊อกน้ำห้องน้ำชั้น 2 หยดตลอด', author: 'NICK', category: 'PLUMBING', priority: 'LOW', assignedTo: '', appointmentTs: '', notes: '', done: false, photoCount: 0 },
+  { reqId: 'SNGS260420009', ts: '20/04/2026 22:00', venue: 'SNGS', area: 'DANCE FLOOR', type: 'MAINTENANCE', title: 'Disco light panel', detailsEn: 'One of the ceiling light panels is flickering.', detailsTh: 'ไฟเพดานดิสโก้กระพริบ', author: 'TINA', category: 'ELECTRICITY', priority: 'MODERATE', assignedTo: 'HDM004', appointmentTs: '27/04/2026 15:00', notes: '', done: false, photoCount: 1 },
+  { reqId: 'MRGO260419003', ts: '19/04/2026 20:30', venue: 'MRGO', area: 'OPEN KITCHEN', type: 'MAINTENANCE', title: 'Hood extraction weak', detailsEn: 'Extraction over main grill running weak, smoke lingering.', detailsTh: 'ดูดควันอ่อน ควันค้างในครัว', author: 'BEE', category: 'HVAC / AIRCON', priority: 'URGENT', assignedTo: 'WEE001', appointmentTs: '29/04/2026 10:00', notes: '', done: false, photoCount: 2 },
+  { reqId: 'GIGA260418011', ts: '18/04/2026 13:15', venue: 'GIGA', area: 'FL1 DINING ROOM', type: 'MAINTENANCE', title: 'AC dripping over table 12', detailsEn: 'Drip on guest tables at lunch peak.', detailsTh: 'แอร์หยดน้ำใส่โต๊ะแขกช่วงกลางวัน', author: 'MAY', category: 'HVAC / AIRCON', priority: 'CRITICAL', assignedTo: '', appointmentTs: '', notes: '', done: false, photoCount: 2 },
+];
+
+// Purchase requests
+let PURCHASES = [
+  { id: 'PR001', title: 'Guide shoes for kitchen elevator', linkedReqId: 'OSKB260401003', venue: 'OSKB', supplierId: 'SUP003', amount: 15200, currency: 'THB', description: '8 guide shoe sets for passenger lift + balance weight', quotationImg: 'IMG1.jpeg', requester: 'PAO', approver: 'JAY', payer: 'JAY', state: 'APPROVAL', createdAt: '24/04/2026 14:00' },
+  { id: 'PR002', title: 'Compressor for OSKB FL1 kitchen AC', linkedReqId: 'OSKB260402005', venue: 'OSKB', supplierId: 'SUP001', amount: 42000, currency: 'THB', description: 'Replacement compressor + labor quote', quotationImg: 'IMG2.jpg', requester: 'PAO', approver: 'JAY', payer: 'JAY', state: 'APPROVAL', createdAt: '24/04/2026 16:40' },
+  { id: 'PR003', title: 'Electrical bulbs bulk buy', linkedReqId: '', venue: 'OSKB', supplierId: 'SUP004', amount: 3200, currency: 'THB', description: '40 LED bulbs — 3 sizes for venue stock', quotationImg: 'IMG3.jpg', requester: 'PAO', approver: 'JAY', payer: 'JAY', state: 'PAYMENT', createdAt: '20/04/2026 10:00', approvedAt: '20/04/2026 18:00', approvedBy: 'JAY' },
+  { id: 'PR004', title: 'Steel shelving for BOH', linkedReqId: '', venue: 'LLFU', supplierId: 'SUP005', amount: 8800, currency: 'THB', description: '2 units of stainless steel shelf, 120x40x180', quotationImg: 'IMG4.jpg', requester: 'PAO', approver: 'JAY', payer: 'JAY', state: 'PAID', createdAt: '10/04/2026 09:00', approvedAt: '11/04/2026 10:00', approvedBy: 'JAY', paidAt: '14/04/2026 15:00', paidBy: 'JAY', slipImg: 'IMG1.jpeg' },
+];
+
+// Overtime entries — real structure from CLEAN sheet
+let OT_ENTRIES = [
+  { id: 'OT001', venue: 'OSKB', tech: 'CHANG YOON', date: '15/04/2026', start: '17:00', end: '23:00', type: 'EXTRA WORK', sundayPh: false, hours: 6, baseFare: 6, specialFare: 0, paid: false },
+  { id: 'OT002', venue: 'SNGS', tech: 'CHANG YOON', date: '18/04/2026', start: '18:00', end: '02:00', type: 'EVENT STANDBY', sundayPh: false, hours: 8, baseFare: 8, specialFare: 0, paid: false },
+  { id: 'OT003', venue: 'OSKB', tech: 'CHANG NUHM', date: '19/04/2026', start: '09:00', end: '14:00', type: 'EXTRA WORK', sundayPh: true, hours: 5, baseFare: 0, specialFare: 5, paid: false },
+  { id: 'OT004', venue: 'LLFU', tech: 'CHANG LERT', date: '20/04/2026', start: '17:00', end: '22:00', type: 'EVENT STANDBY', sundayPh: false, hours: 5, baseFare: 5, specialFare: 0, paid: false },
+  { id: 'OT005', venue: 'FAT CHILI (ALL VENUES)', tech: 'HM DETCH', date: '21/04/2026', start: '10:00', end: '18:00', type: 'EXTRA WORK', sundayPh: false, hours: 8, baseFare: 8, specialFare: 0, paid: false },
+  { id: 'OT006', venue: 'OSKB', tech: 'CHANG YOON', date: '22/04/2026', start: '17:00', end: '22:00', type: 'EXTRA WORK', sundayPh: false, hours: 5, baseFare: 5, specialFare: 0, paid: false },
+  { id: 'OT007', venue: 'OSKB', tech: 'CHANG LERT', date: '12/04/2026', start: '09:00', end: '17:00', type: 'EXTRA WORK', sundayPh: false, hours: 8, baseFare: 8, specialFare: 0, paid: true, paidAt: '18/04/2026' },
+];
+
+// Leave entries
+let LEAVES = [
+  { id: 'LV001', tech: 'CHANG YOON', type: 'PTO', from: '28/04/2026', to: '28/04/2026', note: 'Personal' },
+  { id: 'LV002', tech: 'CHANG NUHM', type: 'SICK', from: '25/04/2026', to: '26/04/2026', note: 'Fever' },
+  { id: 'LV003', tech: 'HM DETCH', type: 'PH', from: '01/05/2026', to: '01/05/2026', note: 'Labour Day' },
+  { id: 'LV004', tech: 'CHANG YOON', type: 'PH', from: '01/05/2026', to: '01/05/2026', note: 'Labour Day' },
+];
+
+// Audit events
+let AUDIT = [
+  { ts: '24/04/2026 18:35', actor: 'PAO', action: 'ASSIGNED', reqId: 'OSKB260424061', detail: 'Assigned to CHANG LERT' },
+  { ts: '24/04/2026 18:30', actor: 'PAO', action: 'SCHEDULED', reqId: 'OSKB260424061', detail: 'Scheduled 25/04 10:00' },
+  { ts: '24/04/2026 17:00', actor: 'PAO', action: 'PURCHASE_CREATED', reqId: 'OSKB260401003', detail: 'PR001 submitted (฿15,200)' },
+  { ts: '24/04/2026 11:32', actor: 'SYSTEM', action: 'JOB_CREATED', reqId: 'OSKB260424057', detail: 'New request from JANE' },
+  { ts: '22/04/2026 11:30', actor: 'PAO', action: 'DONE', reqId: 'OSKB260421049', detail: 'Marked done by PAO' },
+  { ts: '20/04/2026 18:00', actor: 'JAY', action: 'APPROVED', reqId: 'PR003', detail: 'Bulb bulk buy approved' },
+  { ts: '18/04/2026 15:00', actor: 'JAY', action: 'PAID', reqId: 'PR004', detail: 'Steel shelving paid — slip uploaded' },
+];
+
+/* ---------- State ---------- */
+let state = {
+  user: null,               // PAO | JAY
+  activeTab: 'home',
+  activePage: 'home',
+  venueFilter: null,        // null = all
+  jobFilter: { status: 'OPEN', priority: null, venue: null },
+  jobDetailId: null,
+  calMonth: new Date().getMonth(),
+  calYear: new Date().getFullYear(),
+  prSeg: 'new',
+  otSeg: 'totals',
+  dirSeg: 'technicians',
+};
+
+/* ---------- Login ---------- */
+function login(user) {
+  state.user = user;
+  document.getElementById('loginScreen').classList.add('hidden');
+  document.getElementById('app').style.display = 'flex';
+  updateUserDisplay();
+  navTo('home');
+  renderAll();
+  setTimeout(() => lucide.createIcons(), 0);
+}
+function logout() {
+  state.user = null;
+  document.getElementById('loginScreen').classList.remove('hidden');
+  document.getElementById('app').style.display = 'none';
+}
+function updateUserDisplay() {
+  const initials = state.user === 'JAY' ? 'JY' : 'PA';
+  const name = state.user === 'JAY' ? 'Jay' : 'Pao';
+  document.getElementById('userAvatar').textContent = initials;
+  if (document.getElementById('settingsAvatar')) document.getElementById('settingsAvatar').textContent = initials;
+  if (document.getElementById('settingsUser')) document.getElementById('settingsUser').textContent = name;
+}
+
+/* ---------- Navigation ---------- */
+function navTo(page) {
+  state.activePage = page;
+  document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.dataset.page === page));
+  // Bottom-nav highlight (only if page maps to one of the 5 tabs)
+  const tabMap = { home:'home', jobs:'jobs', calendar:'calendar', purchases:'purchases', more:'more', overtime:'more', directory:'more', audit:'more', settings:'more' };
+  const tab = tabMap[page] || 'home';
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.toggle('active', t.dataset.nav === tab));
+  // Lazy render for heavier pages
+  if (page === 'jobs') renderJobs();
+  if (page === 'calendar') renderCalendar();
+  if (page === 'purchases') renderPurchases();
+  if (page === 'overtime') renderOvertime();
+  if (page === 'directory') renderDirectory();
+  if (page === 'audit') renderAudit();
+  if (page === 'home') renderHome();
+  setTimeout(() => lucide.createIcons(), 0);
+}
+
+/* ---------- Helpers ---------- */
+function $(sel) { return document.querySelector(sel); }
+function el(html) { const t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstElementChild; }
+function priClass(p) { return (p || '').toLowerCase(); }
+function parseDMY(s) { if (!s) return null; const m = s.match(/^(\d{2})\/(\d{2})\/(\d{4})(?: (\d{2}):(\d{2}))?/); if (!m) return null; return new Date(+m[3], +m[2]-1, +m[1], +(m[4]||0), +(m[5]||0)); }
+function fmtDate(d) { if (!d) return ''; const dd = String(d.getDate()).padStart(2,'0'); const mm = String(d.getMonth()+1).padStart(2,'0'); return `${dd}/${mm}/${d.getFullYear()}`; }
+function fmtDT(d) { if (!d) return ''; const hh = String(d.getHours()).padStart(2,'0'); const mm = String(d.getMinutes()).padStart(2,'0'); return `${fmtDate(d)} ${hh}:${mm}`; }
+function techName(id) { const t = TECHS.find(x => x.id === id); if (t) return t.name; const c = CONTRACTORS.find(x => x.id === id); if (c) return c.name; return id || ''; }
+function techContact(id) { return TECHS.find(x=>x.id===id) || CONTRACTORS.find(x=>x.id===id) || null; }
+function supplierName(id) { return (SUPPLIERS.find(s => s.id === id) || {}).name || ''; }
+function initials(name) { return (name || '').split(/\s+/).slice(0,2).map(s => s[0]).join('').toUpperCase(); }
+function isOverdue(j) { if (!j.appointmentTs || j.done) return false; const d = parseDMY(j.appointmentTs); if (!d) return false; return d < new Date(); }
+function visibleJobs() {
+  return JOBS.filter(j => {
+    if (state.venueFilter && j.venue !== state.venueFilter) return false;
+    return true;
+  });
+}
+
+/* ---------- Toast ---------- */
+function toast(msg, kind) {
+  kind = kind || 'info';
+  const t = el(`<div class="toast ${kind}">${msg}</div>`);
+  $('#toastContainer').appendChild(t);
+  requestAnimationFrame(() => t.classList.add('visible'));
+  setTimeout(() => { t.classList.remove('visible'); setTimeout(() => t.remove(), 250); }, 2600);
+}
+
+/* ---------- Home ---------- */
+function renderHome() {
+  const today = new Date();
+  const opts = { weekday:'long', day:'numeric', month:'long', year:'numeric' };
+  document.getElementById('homeDate').textContent = today.toLocaleDateString('en-GB', opts);
+
+  const js = visibleJobs().filter(j => !j.done);
+  const todayStr = fmtDate(today);
+
+  const counts = {
+    open: js.length,
+    unassigned: js.filter(j => !j.assignedTo).length,
+    today: js.filter(j => (j.appointmentTs || '').startsWith(todayStr)).length,
+    overdue: js.filter(isOverdue).length,
+    CRITICAL: js.filter(j => j.priority === 'CRITICAL').length,
+    URGENT: js.filter(j => j.priority === 'URGENT').length,
+    MODERATE: js.filter(j => j.priority === 'MODERATE').length,
+    LOW: js.filter(j => j.priority === 'LOW').length,
+  };
+  $('#kpiOpen').textContent = counts.open;
+  $('#kpiUnassigned').textContent = counts.unassigned;
+  $('#kpiToday').textContent = counts.today;
+  $('#kpiOverdue').textContent = counts.overdue;
+  $('#pCritical').textContent = counts.CRITICAL;
+  $('#pUrgent').textContent = counts.URGENT;
+  $('#pModerate').textContent = counts.MODERATE;
+  $('#pLow').textContent = counts.LOW;
+
+  const feed = $('#activityFeed');
+  feed.innerHTML = '';
+  AUDIT.slice(0, 6).forEach(a => {
+    const icon = { ASSIGNED:'user-check', SCHEDULED:'calendar-clock', DONE:'check-circle-2', APPROVED:'stamp', PAID:'wallet', PURCHASE_CREATED:'receipt', JOB_CREATED:'file-plus' }[a.action] || 'activity';
+    feed.appendChild(el(`
+      <li>
+        <div class="act-icon"><i data-lucide="${icon}"></i></div>
+        <div class="act-body"><div><span class="act-who">${a.actor}</span> ${a.detail}</div><div class="act-when">${a.ts} • <strong>${a.reqId}</strong></div></div>
+      </li>`));
+  });
+}
+
+/* ---------- Jobs list ---------- */
+function filterJobsBy(key, value) {
+  state.jobFilter[key] = value;
+  navTo('jobs');
+  // toggle filter chip
+  document.querySelectorAll('#filterBar .filter-chip').forEach(c => c.classList.remove('active'));
+  const c = document.querySelector(`#filterBar .filter-chip[data-value="${value}"]`);
+  if (c) c.classList.add('active');
+}
+document.addEventListener('click', e => {
+  const chip = e.target.closest('#filterBar .filter-chip');
+  if (!chip) return;
+  document.querySelectorAll('#filterBar .filter-chip').forEach(c => c.classList.remove('active'));
+  chip.classList.add('active');
+  state.jobFilter.status = chip.dataset.value;
+  renderJobs();
+});
+function renderJobs() {
+  const list = $('#jobsList');
+  let js = visibleJobs();
+  const f = state.jobFilter.status;
+  if (f === 'OPEN') js = js.filter(j => !j.done);
+  else if (f === 'UNASSIGNED') js = js.filter(j => !j.done && !j.assignedTo);
+  else if (f === 'SCHEDULED') js = js.filter(j => !j.done && j.appointmentTs);
+  else if (f === 'OVERDUE') js = js.filter(isOverdue);
+  else if (f === 'DONE') js = js.filter(j => j.done);
+
+  const prioOrder = { CRITICAL:0, URGENT:1, MODERATE:2, LOW:3 };
+  js.sort((a,b) => (prioOrder[a.priority] - prioOrder[b.priority]) || (parseDMY(b.ts)||0) - (parseDMY(a.ts)||0));
+
+  if (!js.length) { list.innerHTML = `<div class="empty-state"><i data-lucide="inbox"></i><div>No jobs match this filter.</div></div>`; lucide.createIcons(); return; }
+
+  list.innerHTML = '';
+  js.forEach(j => {
+    const overdue = isOverdue(j);
+    list.appendChild(el(`
+      <div class="job-card ${priClass(j.priority)}" onclick="openJobDetail('${j.reqId}')">
+        <div class="jc-head">
+          <span class="venue-badge">${j.venue}</span>
+          <span class="priority ${priClass(j.priority)}">${j.priority}</span>
+          ${overdue ? `<span class="chip red"><i data-lucide="alert-triangle"></i>Overdue</span>` : ''}
+          ${j.done ? `<span class="chip ink">Done</span>` : ''}
+          <span class="jc-req">${j.reqId}</span>
+        </div>
+        <div class="jc-title">${j.title}</div>
+        <div class="jc-details">${j.detailsEn || ''}</div>
+        <div class="jc-foot">
+          <span><i data-lucide="map-pin"></i> ${j.area}</span>
+          <span><i data-lucide="tag"></i> ${j.category}</span>
+          <span><i data-lucide="user"></i> ${j.assignedTo ? techName(j.assignedTo) : '<span class="unassigned">Unassigned</span>'}</span>
+          ${j.appointmentTs ? `<span><i data-lucide="calendar"></i> ${j.appointmentTs}</span>` : `<span class="unassigned"><i data-lucide="calendar-off"></i> Not scheduled</span>`}
+        </div>
+      </div>`));
+  });
+  lucide.createIcons();
+}
+
+/* ---------- Job detail ---------- */
+let jdLang = 'EN';
+function openJobDetail(reqId) {
+  const j = JOBS.find(x => x.reqId === reqId);
+  if (!j) return;
+  state.jobDetailId = reqId;
+  $('#jdReq').textContent = reqId;
+  renderJobDetail(j);
+  $('#jobDetail').classList.add('active');
+  lucide.createIcons();
+}
+function closeJobDetail() {
+  state.jobDetailId = null;
+  $('#jobDetail').classList.remove('active');
+}
+function renderJobDetail(j) {
+  const photos = Array.from({length: j.photoCount || 0}).map((_,i) => `<div class="photo-thumb"><i data-lucide="image"></i><span class="count-pill">${i+1}</span></div>`).join('');
+  const photoSection = j.photoCount ? `<div class="photo-strip">${photos}</div>` : '';
+  const assigned = j.assignedTo ? techName(j.assignedTo) : '';
+  const contact = j.assignedTo ? techContact(j.assignedTo) : null;
+  const auditForJob = AUDIT.filter(a => a.reqId === j.reqId);
+  const historyHtml = auditForJob.length
+    ? `<ul>${auditForJob.map(a => `<li><span class="hx-time">${a.ts.split(' ')[0]}</span><span class="hx-body"><strong>${a.actor}</strong> ${a.detail}</span></li>`).join('')}</ul>`
+    : `<div class="t-small">No activity yet.</div>`;
+
+  $('#jdBody').innerHTML = `
+    <div class="jd-hero">
+      <div class="jd-hero-meta">
+        <span class="venue-badge">${j.venue}</span>
+        <span class="priority ${priClass(j.priority)}">${j.priority}</span>
+        <span class="chip"><i data-lucide="tag"></i>${j.category}</span>
+        ${j.done ? `<span class="fc-stamp sm" data-label="COMPLETED">FC</span>` : ''}
+      </div>
+      <div class="jd-title">${j.title}</div>
+      <div class="jd-area"><i data-lucide="map-pin" style="width:14px;height:14px;vertical-align:-2px"></i> ${j.area} • Reported by ${j.author} • ${j.ts}</div>
+    </div>
+
+    ${photoSection}
+
+    <div class="lang-switch">
+      <button class="${jdLang==='EN'?'active':''}" onclick="switchLang('EN')">English</button>
+      <button class="${jdLang==='TH'?'active':''}" onclick="switchLang('TH')">ไทย</button>
+    </div>
+    <div class="details-text">${jdLang==='EN' ? (j.detailsEn || 'No details.') : (j.detailsTh || 'ไม่มีรายละเอียด')}</div>
+
+    <div class="divider"></div>
+
+    <div class="dispatch-row">
+      <i class="dr-icon" data-lucide="user"></i>
+      <div class="dr-body">
+        <div class="dr-label">Assigned to</div>
+        <div class="dr-value ${assigned?'':'empty'}">${assigned || 'Unassigned'}</div>
+        <div class="dr-actions">
+          <button class="btn compact secondary" onclick="openAssignModal('${j.reqId}')"><i data-lucide="user-plus"></i>${assigned?'Reassign':'Assign'}</button>
+          ${contact && contact.phone ? `<a class="btn compact tertiary" href="tel:${contact.phone}"><i data-lucide="phone"></i>Call</a>` : ''}
+          ${contact && contact.line ? `<a class="btn compact tertiary" href="${contact.line.startsWith('http')?contact.line:'https://line.me/ti/p/~'+contact.line}" target="_blank"><i data-lucide="message-circle"></i>LINE</a>` : ''}
+        </div>
+      </div>
+    </div>
+
+    <div class="dispatch-row">
+      <i class="dr-icon" data-lucide="calendar-clock"></i>
+      <div class="dr-body">
+        <div class="dr-label">Appointment</div>
+        <div class="dr-value ${j.appointmentTs?'':'empty'}">${j.appointmentTs || 'Not scheduled'}</div>
+        <div class="dr-actions">
+          <button class="btn compact secondary" onclick="openScheduleModal('${j.reqId}')"><i data-lucide="calendar"></i>${j.appointmentTs?'Reschedule':'Schedule'}</button>
+          ${j.appointmentTs ? `<button class="btn compact tertiary" onclick="clearSchedule('${j.reqId}')"><i data-lucide="x"></i>Clear</button>` : ''}
+        </div>
+      </div>
+    </div>
+
+    <div class="dispatch-row">
+      <i class="dr-icon" data-lucide="sticky-note"></i>
+      <div class="dr-body">
+        <div class="dr-label">Dispatch notes</div>
+        <div class="dr-value ${j.notes?'':'empty'}">${j.notes || 'None'}</div>
+        <div class="dr-actions">
+          <button class="btn compact secondary" onclick="openNotesModal('${j.reqId}')"><i data-lucide="edit"></i>${j.notes?'Edit notes':'Add note'}</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="jd-actions">
+      <button class="btn secondary" onclick="openPurchaseModal('${j.reqId}')"><i data-lucide="receipt"></i>Request purchase</button>
+      ${j.done
+        ? `<button class="btn secondary" onclick="reopenJob('${j.reqId}')"><i data-lucide="rotate-ccw"></i>Reopen</button>`
+        : `<button class="btn primary" onclick="markDone('${j.reqId}')"><i data-lucide="check"></i>Mark done</button>`
+      }
+    </div>
+
+    <div class="history">
+      <div class="t-label mb-3">Job history</div>
+      ${historyHtml}
+    </div>
+  `;
+  lucide.createIcons();
+}
+function switchLang(l) { jdLang = l; const j = JOBS.find(x => x.reqId === state.jobDetailId); if (j) renderJobDetail(j); }
+
+/* ---------- Job actions ---------- */
+function openAssignModal(reqId) {
+  const j = JOBS.find(x => x.reqId === reqId);
+  const eligible = [...TECHS.map(t => ({ ...t, kind:'Tech' })), ...CONTRACTORS.filter(c => !j.category || (c.category || '').includes(j.category.split(' ')[0])).map(c => ({ ...c, kind:'Contractor' }))];
+  const options = eligible.length ? eligible : [...TECHS.map(t=>({...t,kind:'Tech'})), ...CONTRACTORS.map(c=>({...c,kind:'Contractor'}))];
+  openModal(`
+    <div class="modal-title">Assign job</div>
+    <div class="t-small mb-4">Pick a technician or contractor for <strong>${j.reqId}</strong> — ${j.title}</div>
+    <div class="modal-options">
+      <div class="modal-option" onclick="doAssign('${reqId}','')">
+        <div class="mo-icon"><i data-lucide="user-x"></i></div>
+        <div class="mo-main"><div class="mo-name">Unassigned</div><div class="mo-sub">Clear assignment</div></div>
+      </div>
+      ${options.map(o => `
+        <div class="modal-option ${j.assignedTo===o.id?'selected':''}" onclick="doAssign('${reqId}','${o.id}')">
+          <div class="mo-icon">${initials(o.name)}</div>
+          <div class="mo-main"><div class="mo-name">${o.name}</div><div class="mo-sub">${o.kind} • ${o.role || o.category || ''}</div></div>
+        </div>`).join('')}
+    </div>
+  `);
+}
+function doAssign(reqId, techId) {
+  const j = JOBS.find(x => x.reqId === reqId);
+  const old = j.assignedTo;
+  j.assignedTo = techId;
+  closeAllModals();
+  renderJobDetail(j);
+  const msg = techId ? `Assigned to ${techName(techId)}` : 'Assignment cleared';
+  logAudit(state.user, techId ? 'ASSIGNED' : 'UNASSIGNED', reqId, msg);
+  toast(msg, 'success');
+}
+
+function openScheduleModal(reqId) {
+  const j = JOBS.find(x => x.reqId === reqId);
+  const cur = j.appointmentTs || '';
+  const datePart = cur.split(' ')[0] || fmtDate(new Date());
+  const timePart = cur.split(' ')[1] || '10:00';
+  const [dd,mm,yyyy] = datePart.split('/');
+  openModal(`
+    <div class="modal-title">Schedule appointment</div>
+    <div class="field"><label class="t-label">Date</label><input id="schDate" class="input" type="date" value="${yyyy}-${mm}-${dd}"></div>
+    <div class="field"><label class="t-label">Time</label><input id="schTime" class="input" type="time" value="${timePart}"></div>
+    <div class="modal-actions">
+      <button class="btn secondary block" onclick="closeAllModals()">Cancel</button>
+      <button class="btn primary block" onclick="doSchedule('${reqId}')">Save</button>
+    </div>
+  `);
+}
+function doSchedule(reqId) {
+  const d = $('#schDate').value; const t = $('#schTime').value;
+  if (!d || !t) { toast('Pick date and time', 'warning'); return; }
+  const [y,m,dd] = d.split('-');
+  const j = JOBS.find(x => x.reqId === reqId);
+  j.appointmentTs = `${dd}/${m}/${y} ${t}`;
+  closeAllModals();
+  renderJobDetail(j);
+  logAudit(state.user, 'SCHEDULED', reqId, `Scheduled ${j.appointmentTs}`);
+  toast('Scheduled', 'success');
+}
+function clearSchedule(reqId) {
+  const j = JOBS.find(x => x.reqId === reqId);
+  j.appointmentTs = ''; renderJobDetail(j);
+  logAudit(state.user, 'UNSCHEDULED', reqId, 'Appointment cleared');
+  toast('Schedule cleared');
+}
+
+function openNotesModal(reqId) {
+  const j = JOBS.find(x => x.reqId === reqId);
+  openModal(`
+    <div class="modal-title">Dispatch notes</div>
+    <div class="field"><textarea id="noteTxt" class="textarea" placeholder="Instructions for the technician...">${j.notes || ''}</textarea></div>
+    <div class="modal-actions">
+      <button class="btn secondary block" onclick="closeAllModals()">Cancel</button>
+      <button class="btn primary block" onclick="saveNotes('${reqId}')">Save</button>
+    </div>
+  `);
+}
+function saveNotes(reqId) {
+  const j = JOBS.find(x => x.reqId === reqId);
+  const v = $('#noteTxt').value;
+  j.notes = v;
+  closeAllModals();
+  renderJobDetail(j);
+  logAudit(state.user, 'NOTES_UPDATED', reqId, 'Notes updated');
+  toast('Notes saved', 'success');
+}
+
+function markDone(reqId) {
+  const j = JOBS.find(x => x.reqId === reqId);
+  openModal(`
+    <div class="modal-title">Mark done</div>
+    <div class="t-small mb-4">Optional — attach an "after" photo to document the completed job.</div>
+    <div class="field">
+      <label class="t-label">After photo (optional)</label>
+      <input type="file" accept="image/*" capture="environment" class="input">
+    </div>
+    <div class="field">
+      <label class="t-label">Closure notes (optional)</label>
+      <textarea id="closeNote" class="textarea" placeholder="What was fixed, parts used, hours..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn secondary block" onclick="closeAllModals()">Cancel</button>
+      <button class="btn primary block" onclick="doMarkDone('${reqId}')">Confirm done</button>
+    </div>
+  `);
+}
+function doMarkDone(reqId) {
+  const j = JOBS.find(x => x.reqId === reqId);
+  j.done = true; j.completedTs = fmtDT(new Date()); j.closureNotes = $('#closeNote').value || '';
+  closeAllModals();
+  renderJobDetail(j);
+  logAudit(state.user, 'DONE', reqId, 'Marked done');
+  toast('Job marked done', 'success');
+}
+function reopenJob(reqId) {
+  const j = JOBS.find(x => x.reqId === reqId);
+  j.done = false; j.completedTs = ''; j.closureNotes = '';
+  renderJobDetail(j);
+  logAudit(state.user, 'REOPENED', reqId, 'Job reopened');
+  toast('Job reopened', 'warning');
+}
+
+/* ---------- Calendar ---------- */
+function shiftMonth(delta) { state.calMonth += delta; if (state.calMonth < 0) { state.calMonth = 11; state.calYear--; } if (state.calMonth > 11) { state.calMonth = 0; state.calYear++; } renderCalendar(); }
+function calToday() { const d = new Date(); state.calMonth = d.getMonth(); state.calYear = d.getFullYear(); renderCalendar(); }
+function renderCalendar() {
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  $('#calMonthLabel').textContent = `${months[state.calMonth]} ${state.calYear}`;
+  const first = new Date(state.calYear, state.calMonth, 1);
+  const lastDay = new Date(state.calYear, state.calMonth+1, 0).getDate();
+  // Start grid on Monday
+  let startOffset = (first.getDay() + 6) % 7;
+  const today = new Date();
+  const todayStr = fmtDate(today);
+  const grid = $('#calDays'); grid.innerHTML = '';
+
+  const dayCell = (d, otherMonth) => {
+    const ds = fmtDate(d);
+    const leaves = LEAVES.filter(lv => ds >= lv.from && ds <= lv.to);
+    const jobs = visibleJobs().filter(j => !j.done && (j.appointmentTs || '').startsWith(ds));
+    const dots = jobs.slice(0, 6).map(j => `<span class="${priClass(j.priority)}"></span>`).join('');
+    const leaveStrip = leaves.slice(0,3).map(lv => `<div class="leave-strip ${lv.type.toLowerCase()}">${lv.tech.split(' ').pop()} • ${lv.type}</div>`).join('');
+    const todayCls = ds === todayStr ? ' today' : '';
+    return `<div class="cal-day${otherMonth?' other':''}${todayCls}" onclick="onCalDayClick('${ds}')"><div class="d-num">${d.getDate()}</div>${leaveStrip}${dots?`<div class="job-dot">${dots}</div>`:''}</div>`;
+  };
+
+  // previous month tail
+  for (let i = startOffset; i > 0; i--) {
+    const d = new Date(state.calYear, state.calMonth, 1 - i + 1); // adjust
+    const prev = new Date(state.calYear, state.calMonth, 0); prev.setDate(prev.getDate() - (i-1));
+    grid.insertAdjacentHTML('beforeend', dayCell(prev, true));
+  }
+  for (let i = 1; i <= lastDay; i++) {
+    const d = new Date(state.calYear, state.calMonth, i);
+    grid.insertAdjacentHTML('beforeend', dayCell(d, false));
+  }
+  // fill to 42 cells
+  const filled = grid.children.length;
+  for (let i = 1; i <= 42 - filled; i++) {
+    const d = new Date(state.calYear, state.calMonth+1, i);
+    grid.insertAdjacentHTML('beforeend', dayCell(d, true));
+  }
+
+  // leave list
+  const ll = $('#leaveList');
+  ll.innerHTML = LEAVES.length ? '' : `<li class="empty-state"><i data-lucide="umbrella"></i><div>No leave recorded.</div></li>`;
+  LEAVES.forEach(lv => {
+    ll.appendChild(el(`
+      <li onclick="deleteLeave('${lv.id}')">
+        <i data-lucide="${lv.type==='SICK'?'thermometer':lv.type==='PH'?'sparkles':'umbrella'}"></i>
+        <div><div style="font-weight:600">${lv.tech} — ${lv.type}</div><div class="t-small">${lv.from}${lv.from!==lv.to?' → '+lv.to:''} • ${lv.note||'No note'}</div></div>
+        <i class="chevron" data-lucide="x"></i>
+      </li>`));
+  });
+  lucide.createIcons();
+}
+function onCalDayClick(ds) {
+  const leaves = LEAVES.filter(lv => ds >= lv.from && ds <= lv.to);
+  const jobs = visibleJobs().filter(j => !j.done && (j.appointmentTs || '').startsWith(ds));
+  openModal(`
+    <div class="modal-title">${ds}</div>
+    ${leaves.length ? `<div class="t-label mb-2">Leave</div>${leaves.map(lv => `<div class="modal-option"><div class="mo-icon"><i data-lucide="umbrella"></i></div><div class="mo-main"><div class="mo-name">${lv.tech}</div><div class="mo-sub">${lv.type} — ${lv.note||''}</div></div></div>`).join('')}<div class="divider"></div>` : ''}
+    ${jobs.length ? `<div class="t-label mb-2">Scheduled jobs</div>${jobs.map(j => `<div class="modal-option" onclick="closeAllModals(); openJobDetail('${j.reqId}')"><div class="mo-icon">${j.venue}</div><div class="mo-main"><div class="mo-name">${j.title}</div><div class="mo-sub">${j.appointmentTs.split(' ')[1]||''} • ${j.area} • ${j.assignedTo?techName(j.assignedTo):'Unassigned'}</div></div></div>`).join('')}` : (leaves.length ? '' : `<div class="empty-state"><i data-lucide="calendar"></i><div>Nothing on this day.</div></div>`)}
+  `);
+}
+
+function openLeaveModal() {
+  openModal(`
+    <div class="modal-title">New leave</div>
+    <div class="field"><label class="t-label">Technician</label><select id="lvTech" class="select">${TECHS.map(t => `<option value="${t.name}">${t.name}</option>`).join('')}</select></div>
+    <div class="field"><label class="t-label">Type</label><select id="lvType" class="select"><option value="PTO">PTO</option><option value="PH">Public holiday</option><option value="SICK">Sick</option></select></div>
+    <div class="row" style="gap:12px">
+      <div class="field" style="flex:1"><label class="t-label">From</label><input id="lvFrom" class="input" type="date"></div>
+      <div class="field" style="flex:1"><label class="t-label">To</label><input id="lvTo" class="input" type="date"></div>
+    </div>
+    <div class="field"><label class="t-label">Note</label><input id="lvNote" class="input" placeholder="Optional"></div>
+    <div class="modal-actions">
+      <button class="btn secondary block" onclick="closeAllModals()">Cancel</button>
+      <button class="btn primary block" onclick="saveLeave()">Save</button>
+    </div>
+  `);
+}
+function saveLeave() {
+  const tech = $('#lvTech').value; const type = $('#lvType').value;
+  const from = $('#lvFrom').value; const to = $('#lvTo').value || from;
+  if (!from) { toast('Pick a date', 'warning'); return; }
+  const toDMY = s => { const [y,m,d] = s.split('-'); return `${d}/${m}/${y}`; };
+  const id = 'LV' + (LEAVES.length+1).toString().padStart(3,'0');
+  LEAVES.push({ id, tech, type, from: toDMY(from), to: toDMY(to), note: $('#lvNote').value });
+  closeAllModals(); renderCalendar(); toast('Leave recorded', 'success');
+}
+function deleteLeave(id) {
+  if (!confirm('Remove this leave entry?')) return;
+  LEAVES = LEAVES.filter(l => l.id !== id); renderCalendar(); toast('Leave removed');
+}
+
+/* ---------- Purchases ---------- */
+document.addEventListener('click', e => {
+  const b = e.target.closest('#prSeg button');
+  if (!b) return;
+  document.querySelectorAll('#prSeg button').forEach(x => x.classList.remove('active'));
+  b.classList.add('active');
+  state.prSeg = b.dataset.seg;
+  renderPurchases();
+});
+function renderPurchases() {
+  const c = $('#prContent');
+  if (state.prSeg === 'new') {
+    c.innerHTML = `
+      <div class="card">
+        <div class="field"><label class="t-label">Title</label><input id="prTitle" class="input" placeholder="e.g. Replacement AC compressor"></div>
+        <div class="field"><label class="t-label">Link to open job (optional)</label>
+          <select id="prJob" class="select"><option value="">— Standalone (no linked job) —</option>
+            ${JOBS.filter(j => !j.done).map(j => `<option value="${j.reqId}">${j.reqId} — ${j.title} (${j.venue})</option>`).join('')}
+          </select>
+        </div>
+        <div class="field"><label class="t-label">Venue</label>
+          <select id="prVenue" class="select">${VENUES.map(v => `<option value="${v.code}">${v.name} (${v.code})</option>`).join('')}</select>
+        </div>
+        <div class="field"><label class="t-label">Supplier</label>
+          <select id="prSupplier" class="select">${SUPPLIERS.map(s => `<option value="${s.id}">${s.name}</option>`).join('')}</select>
+        </div>
+        <div class="field"><label class="t-label">Amount (THB)</label><input id="prAmount" class="input" type="number" placeholder="0"></div>
+        <div class="field"><label class="t-label">Description / quote notes</label><textarea id="prDesc" class="textarea" placeholder="Line items, warranty, anything relevant..."></textarea></div>
+        <div class="field"><label class="t-label">Quotation or shopping list (photo)</label><input id="prFile" type="file" accept="image/*,application/pdf" capture="environment" class="input"></div>
+        <div class="row" style="gap:12px">
+          <div class="field" style="flex:1"><label class="t-label">Approver</label><select id="prApprover" class="select"><option value="JAY">Jay</option></select></div>
+          <div class="field" style="flex:1"><label class="t-label">Payer</label><select id="prPayer" class="select"><option value="JAY">Jay</option><option value="JANE">Jane (OSKB admin)</option></select></div>
+        </div>
+        <button class="btn primary block prominent" onclick="submitPurchase()"><i data-lucide="send"></i>Submit for approval</button>
+      </div>`;
+  } else if (state.prSeg === 'approval') {
+    const list = PURCHASES.filter(p => p.state === 'APPROVAL');
+    c.innerHTML = list.length ? '' : `<div class="empty-state"><i data-lucide="inbox"></i><div>No requests awaiting approval.</div></div>`;
+    list.forEach(p => c.appendChild(prCardEl(p, 'APPROVE')));
+  } else if (state.prSeg === 'payment') {
+    const list = PURCHASES.filter(p => p.state === 'PAYMENT');
+    c.innerHTML = list.length ? '' : `<div class="empty-state"><i data-lucide="wallet"></i><div>No pending payments.</div></div>`;
+    list.forEach(p => c.appendChild(prCardEl(p, 'PAY')));
+  } else {
+    const list = PURCHASES.filter(p => p.state === 'PAID');
+    c.innerHTML = list.length ? '' : `<div class="empty-state"><i data-lucide="check-circle-2"></i><div>No paid items yet.</div></div>`;
+    list.forEach(p => c.appendChild(prCardEl(p, null)));
+  }
+  lucide.createIcons();
+}
+function prCardEl(p, action) {
+  const stamp = p.state === 'PAID' ? `<span class="fc-stamp-corner fc-stamp sm" data-label="PAID">FC</span>` :
+                p.state === 'PAYMENT' ? `<span class="fc-stamp-corner fc-stamp sm" data-label="APPROVED">FC</span>` : '';
+  const actionBtn = action === 'APPROVE'
+    ? `<button class="btn primary compact" onclick="approvePurchase('${p.id}')"><i data-lucide="check"></i>Approve</button><button class="btn tertiary compact" onclick="viewQuote('${p.id}')"><i data-lucide="image"></i>View quote</button>`
+    : action === 'PAY'
+    ? `<button class="btn primary compact" onclick="openPayModal('${p.id}')"><i data-lucide="wallet"></i>Mark paid</button>`
+    : `<button class="btn tertiary compact" onclick="viewQuote('${p.id}')"><i data-lucide="image"></i>View slip</button>`;
+  return el(`
+    <div class="card pr-card">
+      ${stamp}
+      <div class="pr-head">
+        <div class="thumb" style="background-image:url('PURCHASE SAMPLES/${p.quotationImg}')"></div>
+        <div class="info">
+          <div class="pr-title">${p.title}</div>
+          <div class="pr-meta">${p.venue} • ${supplierName(p.supplierId)} • ${p.createdAt}</div>
+          ${p.linkedReqId ? `<div class="t-small mt-2"><i data-lucide="link" style="width:12px;height:12px;vertical-align:-1px"></i> <strong>${p.linkedReqId}</strong></div>` : ''}
+        </div>
+        <div class="pr-amount">฿${p.amount.toLocaleString()}</div>
+      </div>
+      <div class="t-small mt-3">${p.description}</div>
+      <div class="pr-foot">${actionBtn}</div>
+    </div>`);
+}
+function submitPurchase() {
+  const title = $('#prTitle').value.trim();
+  if (!title) { toast('Give it a title', 'warning'); return; }
+  const id = 'PR' + (PURCHASES.length+1).toString().padStart(3,'0');
+  PURCHASES.unshift({
+    id, title, linkedReqId: $('#prJob').value, venue: $('#prVenue').value,
+    supplierId: $('#prSupplier').value, amount: parseInt($('#prAmount').value||'0', 10),
+    currency: 'THB', description: $('#prDesc').value, quotationImg: 'IMG1.jpeg',
+    requester: state.user, approver: 'JAY', payer: $('#prPayer').value,
+    state: 'APPROVAL', createdAt: fmtDT(new Date()),
+  });
+  logAudit(state.user, 'PURCHASE_CREATED', id, `Submitted ${title} (฿${$('#prAmount').value})`);
+  toast('Purchase submitted for approval', 'success');
+  document.querySelector('#prSeg button[data-seg="approval"]').click();
+}
+function approvePurchase(id) {
+  const p = PURCHASES.find(x => x.id === id);
+  p.state = 'PAYMENT'; p.approvedAt = fmtDT(new Date()); p.approvedBy = state.user;
+  renderPurchases();
+  logAudit(state.user, 'APPROVED', id, `Approved ${p.title}`);
+  toast('Approved', 'success');
+}
+function openPayModal(id) {
+  const p = PURCHASES.find(x => x.id === id);
+  openModal(`
+    <div class="modal-title">Mark as paid</div>
+    <div class="t-small mb-4">${p.title} — <strong>฿${p.amount.toLocaleString()}</strong></div>
+    <div class="field"><label class="t-label">Transfer slip (photo)</label><input type="file" accept="image/*" capture="environment" class="input"></div>
+    <div class="field"><label class="t-label">Paid by</label><select id="paidBy" class="select"><option value="JAY">Jay</option><option value="JANE">Jane (OSKB admin)</option></select></div>
+    <div class="modal-actions"><button class="btn secondary block" onclick="closeAllModals()">Cancel</button><button class="btn primary block" onclick="doPay('${id}')">Confirm payment</button></div>
+  `);
+}
+function doPay(id) {
+  const p = PURCHASES.find(x => x.id === id);
+  p.state = 'PAID'; p.paidAt = fmtDT(new Date()); p.paidBy = $('#paidBy').value; p.slipImg = 'IMG1.jpeg';
+  closeAllModals(); renderPurchases();
+  logAudit(state.user, 'PAID', id, `Paid ${p.title}`);
+  toast('Payment recorded', 'success');
+}
+function viewQuote(id) {
+  const p = PURCHASES.find(x => x.id === id);
+  openModal(`
+    <div class="modal-title">${p.state==='PAID'?'Transfer slip':'Quotation'}</div>
+    <div style="width:100%;height:240px;background:var(--line-soft);border-radius:4px;background-size:cover;background-position:center;background-image:url('PURCHASE SAMPLES/${p.state==='PAID'?p.slipImg:p.quotationImg}')"></div>
+    <div class="t-small mt-3">${p.description}</div>
+    <div class="modal-actions"><button class="btn secondary block" onclick="closeAllModals()">Close</button></div>
+  `);
+}
+function openPurchaseModal(reqId) {
+  navTo('purchases');
+  document.querySelector('#prSeg button[data-seg="new"]').click();
+  setTimeout(() => {
+    const sel = $('#prJob'); if (sel) { sel.value = reqId; const j = JOBS.find(x=>x.reqId===reqId); if (j && $('#prVenue')) $('#prVenue').value = j.venue; }
+  }, 50);
+  closeJobDetail();
+}
+
+/* ---------- Overtime ---------- */
+document.addEventListener('click', e => {
+  const b = e.target.closest('#otSeg button');
+  if (!b) return;
+  document.querySelectorAll('#otSeg button').forEach(x => x.classList.remove('active'));
+  b.classList.add('active');
+  state.otSeg = b.dataset.seg;
+  renderOvertime();
+});
+function unpaidForTech(name) { return OT_ENTRIES.filter(e => e.tech === name && !e.paid); }
+function hoursTotal(es) { return es.reduce((a,b) => a + (b.hours||0), 0); }
+function renderOvertime() {
+  const c = $('#otContent');
+  if (state.otSeg === 'totals') {
+    c.innerHTML = TECHS.map(t => {
+      const unpaid = unpaidForTech(t.name);
+      const baseTot = unpaid.reduce((a,b)=>a+(b.baseFare||0),0);
+      const spcTot = unpaid.reduce((a,b)=>a+(b.specialFare||0),0);
+      return `
+        <div class="ot-tech-card" onclick="openOtTechDetail('${t.name}')">
+          <div class="dir-avatar">${initials(t.name)}</div>
+          <div class="ot-info">
+            <div class="ot-name">${t.name}</div>
+            <div class="ot-sub">${unpaid.length} unpaid ${unpaid.length===1?'entry':'entries'} • Base ${baseTot}h • Special ${spcTot}h</div>
+          </div>
+          <div class="ot-amount"><div class="ot-hrs">${hoursTotal(unpaid)}h</div><div class="ot-lbl">Due</div></div>
+        </div>`;
+    }).join('');
+  } else if (state.otSeg === 'new') {
+    c.innerHTML = `
+      <div class="card">
+        <div class="field"><label class="t-label">Venue</label>
+          <select id="otVenue" class="select">
+            <option value="FAT CHILI (ALL VENUES)">Fat Chili (All venues)</option>
+            ${VENUES.map(v => `<option value="${v.code}">${v.name}</option>`).join('')}
+          </select>
+        </div>
+        <div class="field"><label class="t-label">Technician</label>
+          <select id="otTech" class="select">${TECHS.map(t => `<option>${t.name}</option>`).join('')}</select>
+        </div>
+        <div class="field"><label class="t-label">Date</label><input id="otDate" class="input" type="date" value="${new Date().toISOString().slice(0,10)}"></div>
+        <div class="row" style="gap:12px">
+          <div class="field" style="flex:1"><label class="t-label">Start</label><input id="otStart" class="input" type="time" value="17:00"></div>
+          <div class="field" style="flex:1"><label class="t-label">End</label><input id="otEnd" class="input" type="time" value="22:00"></div>
+        </div>
+        <div class="field"><label class="t-label">Type</label>
+          <select id="otType" class="select"><option>EXTRA WORK</option><option>EVENT STANDBY</option></select>
+        </div>
+        <div class="field"><label class="row" style="gap:8px"><input id="otSunPh" type="checkbox"><span>Sunday / public holiday (special fare)</span></label></div>
+        <button class="btn primary block prominent" onclick="saveOt()"><i data-lucide="plus"></i>Record entry</button>
+        <div class="t-small mt-3">Recording is final. If data is recorded, it's considered approved.</div>
+      </div>`;
+  } else {
+    // history
+    c.innerHTML = OT_ENTRIES.slice().reverse().map(e => `
+      <div class="card compact" style="margin-bottom:8px">
+        <div class="row between">
+          <div><div style="font-weight:600">${e.tech}</div><div class="t-small">${e.date} • ${e.start}–${e.end} • ${e.venue}</div></div>
+          <div class="text-right">
+            <div style="font-weight:600">${e.hours}h</div>
+            <div class="t-small">${e.sundayPh?'Special':'Base'}</div>
+          </div>
+        </div>
+        <div class="row mt-2"><span class="chip ${e.paid?'ink':''}">${e.paid?`Paid ${e.paidAt||''}`:'Unpaid'}</span><span class="chip">${e.type}</span></div>
+      </div>`).join('');
+  }
+  lucide.createIcons();
+}
+function openOtTechDetail(name) {
+  const unpaid = unpaidForTech(name);
+  if (!unpaid.length) { toast('No unpaid entries for ' + name); return; }
+  openModal(`
+    <div class="modal-title">${name}</div>
+    <div class="t-small mb-4">${unpaid.length} unpaid ${unpaid.length===1?'entry':'entries'}</div>
+    ${unpaid.map(e => `<div class="modal-option"><div class="mo-icon">${e.hours}h</div><div class="mo-main"><div class="mo-name">${e.date} — ${e.venue}</div><div class="mo-sub">${e.start}–${e.end} • ${e.type}${e.sundayPh?' • Sun/PH':''}</div></div></div>`).join('')}
+    <div class="modal-actions">
+      <button class="btn secondary block" onclick="closeAllModals()">Close</button>
+      <button class="btn primary block" onclick="openOtPayModal('${name}')"><i data-lucide="wallet"></i>Record payment</button>
+    </div>`);
+}
+function openOtPayModal(name) {
+  const unpaid = unpaidForTech(name);
+  const total = hoursTotal(unpaid);
+  openModal(`
+    <div class="modal-title">Record OT payment</div>
+    <div class="t-small mb-4">Paying <strong>${name}</strong> for ${unpaid.length} entries (${total}h)</div>
+    <div class="field"><label class="t-label">Transfer slip (photo)</label><input type="file" accept="image/*" capture="environment" class="input"></div>
+    <div class="field"><label class="row" style="gap:8px"><input type="checkbox" id="otConfirm"><span>I confirm the transfer has been made</span></label></div>
+    <div class="modal-actions"><button class="btn secondary block" onclick="closeAllModals()">Cancel</button><button class="btn primary block" onclick="doOtPay('${name}')">Mark as paid</button></div>`);
+}
+function doOtPay(name) {
+  if (!$('#otConfirm').checked) { toast('Confirm the transfer first', 'warning'); return; }
+  const unpaid = unpaidForTech(name);
+  unpaid.forEach(e => { e.paid = true; e.paidAt = fmtDate(new Date()); });
+  closeAllModals(); renderOvertime();
+  logAudit(state.user, 'OT_PAID', name, `Paid ${unpaid.length} entries — ${hoursTotal(unpaid)}h`);
+  toast(`${name} paid out`, 'success');
+}
+function saveOt() {
+  const id = 'OT' + (OT_ENTRIES.length+1).toString().padStart(3,'0');
+  const startT = $('#otStart').value; const endT = $('#otEnd').value;
+  let hrs = 0;
+  if (startT && endT) {
+    const [sh,sm] = startT.split(':').map(Number); const [eh,em] = endT.split(':').map(Number);
+    let mins = (eh*60+em) - (sh*60+sm); if (mins < 0) mins += 24*60;
+    hrs = Math.round(mins/60 * 10)/10;
+  }
+  const sunPh = $('#otSunPh').checked;
+  const d = $('#otDate').value; const [y,m,dd] = d.split('-');
+  OT_ENTRIES.push({
+    id, venue: $('#otVenue').value, tech: $('#otTech').value,
+    date: `${dd}/${m}/${y}`, start: startT, end: endT,
+    type: $('#otType').value, sundayPh: sunPh, hours: hrs,
+    baseFare: sunPh ? 0 : hrs, specialFare: sunPh ? hrs : 0, paid: false,
+  });
+  logAudit(state.user, 'OT_LOGGED', id, `${$('#otTech').value} ${hrs}h @ ${$('#otVenue').value}`);
+  toast('OT entry recorded', 'success');
+  document.querySelector('#otSeg button[data-seg="totals"]').click();
+}
+
+/* ---------- Directory ---------- */
+document.addEventListener('click', e => {
+  const b = e.target.closest('#dirSeg button');
+  if (!b) return;
+  document.querySelectorAll('#dirSeg button').forEach(x => x.classList.remove('active'));
+  b.classList.add('active');
+  state.dirSeg = b.dataset.seg;
+  renderDirectory();
+});
+function renderDirectory() {
+  const list = $('#dirList');
+  let items = [];
+  if (state.dirSeg === 'technicians') items = TECHS.map(t => ({ ...t, role: t.role }));
+  else if (state.dirSeg === 'contractors') items = CONTRACTORS.map(c => ({ ...c, role: c.category }));
+  else items = SUPPLIERS.map(s => ({ ...s, role: s.category + (s.contact ? ` • ${s.contact}` : '') }));
+  list.innerHTML = '';
+  items.forEach(it => {
+    const tel = it.phone ? `<a class="icon-btn" href="tel:${it.phone}" onclick="event.stopPropagation()"><i data-lucide="phone"></i></a>` : '';
+    const line = it.line ? `<a class="icon-btn red" href="${it.line.startsWith('http')?it.line:'https://line.me/ti/p/~'+it.line}" target="_blank" onclick="event.stopPropagation()"><i data-lucide="message-circle"></i></a>` : '';
+    list.appendChild(el(`
+      <li>
+        <div class="dir-avatar">${initials(it.name)}</div>
+        <div class="dir-info"><div class="dir-name">${it.name}</div><div class="dir-role">${it.role || ''}</div></div>
+        <div class="dir-actions">${tel}${line}</div>
+      </li>`));
+  });
+  lucide.createIcons();
+}
+function openNewContactModal() {
+  const label = state.dirSeg === 'technicians' ? 'technician' : state.dirSeg === 'contractors' ? 'contractor' : 'supplier';
+  openModal(`
+    <div class="modal-title">New ${label}</div>
+    <div class="field"><label class="t-label">Name</label><input id="ncName" class="input"></div>
+    <div class="field"><label class="t-label">Category / role</label><input id="ncCat" class="input" placeholder="e.g. HVAC / AIRCON"></div>
+    ${state.dirSeg==='suppliers' ? `<div class="field"><label class="t-label">Contact person</label><input id="ncContact" class="input" placeholder="e.g. P'Tim"></div>` : ''}
+    <div class="field"><label class="t-label">Phone</label><input id="ncPhone" class="input" inputmode="tel"></div>
+    <div class="field"><label class="t-label">LINE (ID or https://line.me/ link)</label><input id="ncLine" class="input"></div>
+    <div class="modal-actions"><button class="btn secondary block" onclick="closeAllModals()">Cancel</button><button class="btn primary block" onclick="saveContact()">Save</button></div>
+  `);
+}
+function saveContact() {
+  const name = $('#ncName').value.trim(); if (!name) { toast('Name required', 'warning'); return; }
+  const base = { id: Math.random().toString(36).slice(2,7).toUpperCase(), name, phone: $('#ncPhone').value, line: $('#ncLine').value };
+  if (state.dirSeg === 'technicians') TECHS.push({ ...base, role: $('#ncCat').value });
+  else if (state.dirSeg === 'contractors') CONTRACTORS.push({ ...base, category: $('#ncCat').value });
+  else SUPPLIERS.push({ ...base, category: $('#ncCat').value, contact: $('#ncContact').value });
+  closeAllModals(); renderDirectory(); toast('Added', 'success');
+}
+
+/* ---------- Audit page ---------- */
+function renderAudit() {
+  const c = $('#fullActivity'); c.innerHTML = '';
+  AUDIT.slice().reverse().forEach(a => {
+    const icon = { ASSIGNED:'user-check', UNASSIGNED:'user-x', SCHEDULED:'calendar-clock', UNSCHEDULED:'calendar-x', DONE:'check-circle-2', REOPENED:'rotate-ccw', NOTES_UPDATED:'edit', APPROVED:'stamp', PAID:'wallet', OT_PAID:'wallet', OT_LOGGED:'clock', PURCHASE_CREATED:'receipt', JOB_CREATED:'file-plus' }[a.action] || 'activity';
+    c.appendChild(el(`
+      <li>
+        <div class="act-icon"><i data-lucide="${icon}"></i></div>
+        <div class="act-body"><div><span class="act-who">${a.actor}</span> ${a.detail}</div><div class="act-when">${a.ts} • <strong>${a.reqId}</strong></div></div>
+      </li>`));
+  });
+  lucide.createIcons();
+}
+function logAudit(actor, action, reqId, detail) { AUDIT.unshift({ ts: fmtDT(new Date()), actor, action, reqId, detail }); }
+
+/* ---------- Venue picker ---------- */
+function openVenuePicker() {
+  openModal(`
+    <div class="modal-title">Filter by venue</div>
+    <div class="modal-options">
+      <div class="modal-option ${!state.venueFilter?'selected':''}" onclick="setVenue(null)"><div class="mo-icon"><i data-lucide="globe"></i></div><div class="mo-main"><div class="mo-name">All venues</div><div class="mo-sub">Everything across the group</div></div></div>
+      ${VENUES.map(v => `<div class="modal-option ${state.venueFilter===v.code?'selected':''}" onclick="setVenue('${v.code}')"><div class="mo-icon">${v.code}</div><div class="mo-main"><div class="mo-name">${v.name}</div><div class="mo-sub">${v.code}</div></div></div>`).join('')}
+    </div>
+  `);
+}
+function setVenue(code) {
+  state.venueFilter = code;
+  const label = code ? (VENUES.find(v => v.code === code) || {}).name || 'All venues' : 'All venues';
+  $('#venueChipLabel').textContent = label;
+  const sv = $('#settingsVenueLabel'); if (sv) sv.textContent = label;
+  closeAllModals();
+  renderAll();
+  toast(code ? `Filtered: ${label}` : 'Showing all venues');
+}
+
+/* ---------- Modal plumbing ---------- */
+function openModal(html) {
+  $('#modalBody').innerHTML = html;
+  $('#modal').classList.add('active');
+  $('#overlay').classList.add('active');
+  lucide.createIcons();
+}
+function closeAllModals() {
+  $('#modal').classList.remove('active');
+  $('#overlay').classList.remove('active');
+}
+
+/* ---------- Top-level helpers ---------- */
+function toggleJobActions() { toast('Extra actions coming soon'); }
+function renderAll() { renderHome(); if (state.activePage === 'jobs') renderJobs(); if (state.activePage === 'calendar') renderCalendar(); if (state.activePage === 'purchases') renderPurchases(); if (state.activePage === 'overtime') renderOvertime(); if (state.activePage === 'directory') renderDirectory(); if (state.activePage === 'audit') renderAudit(); }
+
+/* ---------- Init ---------- */
+lucide.createIcons();
+</script>
+
+</body>
+</html>
