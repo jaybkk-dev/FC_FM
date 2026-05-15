@@ -67,7 +67,7 @@ ul, ol { list-style: none; }
 .t-tagline { font-family: var(--font-editorial); font-style: italic; font-size: 20px; line-height: 1.3; }
 
 /* === App shell === */
-#app { width: 100vw; height: 100vh; display: flex; flex-direction: column; background: var(--fc-cream); }
+#app { width: 100vw; height: 100vh; height: 100dvh; display: flex; flex-direction: column; background: var(--fc-cream); }
 
 /* Login */
 .login-screen {
@@ -127,12 +127,13 @@ ul, ol { list-style: none; }
 .section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-3); }
 .section-head .t-label { margin: 0; }
 
-/* Bottom nav */
+/* Bottom nav — fixed so mobile Chrome URL bar can't push it off-screen */
 .bottom-nav {
-  height: var(--nav-height); flex-shrink: 0;
+  position: fixed; left: 0; right: 0; bottom: 0;
+  height: calc(var(--nav-height) + env(safe-area-inset-bottom, 0px));
   background: var(--fc-white); border-top: 1px solid var(--line);
   display: grid; grid-template-columns: repeat(5, 1fr);
-  padding-bottom: env(safe-area-inset-bottom);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
   z-index: 20;
 }
 .nav-tab {
@@ -359,34 +360,82 @@ ul, ol { list-style: none; }
 .history li .hx-body strong { color: var(--ink-100); font-weight: 600; }
 
 /* Calendar */
-.cal-head { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-4); }
-.cal-head .month { font-family: var(--font-heading); font-weight: 700; font-size: 20px; flex: 1; }
+.cal-head { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-3); }
+.cal-head .period { font-family: var(--font-heading); font-weight: 700; font-size: 18px; flex: 1; }
 .cal-head .icon-btn { width: 36px; height: 36px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--fc-white); }
 .cal-head .icon-btn i { width: 18px; height: 18px; }
 
+/* Month view — equal-height rows, overflow clipped per cell */
 .cal-grid {
   background: var(--fc-white); border: 1px solid rgba(35,31,32,0.10);
   border-radius: var(--radius-md); overflow: hidden;
 }
 .cal-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); background: var(--line-soft); }
 .cal-weekdays div { text-align: center; padding: var(--space-2) 0; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-70); }
-.cal-days { display: grid; grid-template-columns: repeat(7, 1fr); }
+.cal-days { display: grid; grid-template-columns: repeat(7, 1fr); grid-auto-rows: 68px; }
 .cal-day {
-  min-height: 72px; padding: 4px; border-right: 1px solid var(--line-soft); border-bottom: 1px solid var(--line-soft);
+  padding: 4px; overflow: hidden;
+  border-right: 1px solid var(--line-soft); border-bottom: 1px solid var(--line-soft);
   font-size: 12px; position: relative; background: var(--fc-white);
+  display: flex; flex-direction: column; gap: 2px;
 }
 .cal-day.other { background: var(--line-soft); color: var(--ink-40); }
 .cal-day:nth-child(7n) { border-right: none; }
-.cal-day .d-num { text-align: right; font-size: 12px; font-weight: 500; color: var(--ink-70); }
+.cal-day .d-num { text-align: right; font-size: 12px; font-weight: 500; color: var(--ink-70); line-height: 1; flex-shrink: 0; }
 .cal-day.today .d-num { color: var(--fc-red); font-weight: 700; }
 .cal-day.today .d-num::after { content: ''; display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: var(--fc-red); margin-left: 4px; vertical-align: middle; }
-.cal-day .leave-strip { background: rgba(35,31,32,0.15); color: var(--ink-100); font-size: 9px; font-weight: 600; letter-spacing: 0.05em; padding: 1px 3px; border-radius: 1px; margin-top: 2px; text-transform: uppercase; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cal-day .leave-strip { background: rgba(35,31,32,0.15); color: var(--ink-100); font-size: 9px; font-weight: 600; letter-spacing: 0.05em; padding: 1px 3px; border-radius: 1px; text-transform: uppercase; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-shrink: 0; }
 .cal-day .leave-strip.sick { background: rgba(35,31,32,0.30); color: var(--fc-cream); }
 .cal-day .leave-strip.ph { background: rgba(216,31,38,0.20); color: var(--fc-red); }
-.cal-day .job-dot { display: flex; gap: 2px; margin-top: 2px; flex-wrap: wrap; }
+.cal-day .job-dot { display: flex; gap: 2px; flex-wrap: wrap; margin-top: auto; }
 .cal-day .job-dot span { width: 5px; height: 5px; border-radius: 50%; background: var(--ink-70); }
 .cal-day .job-dot span.critical { background: var(--fc-red); }
 .cal-day .job-dot span.urgent { background: var(--warning); }
+.cal-day .more-pill { font-size: 9px; color: var(--ink-70); font-weight: 600; }
+
+/* Week view — vertical stack of day cards, mobile-optimized */
+.cal-week-list { display: flex; flex-direction: column; gap: var(--space-3); }
+.cal-week-day {
+  background: var(--fc-white); border: 1px solid rgba(35,31,32,0.10);
+  border-radius: var(--radius-md); padding: var(--space-4);
+  position: relative;
+}
+.cal-week-day.today { border-left: 3px solid var(--fc-red); }
+.cal-week-day .wd-head {
+  display: flex; align-items: baseline; gap: var(--space-3);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--line-soft);
+}
+.cal-week-day .wd-dow { font-family: var(--font-ui); font-weight: 600; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-70); }
+.cal-week-day.today .wd-dow { color: var(--fc-red); }
+.cal-week-day .wd-num { font-family: var(--font-heading); font-weight: 700; font-size: 22px; color: var(--fc-black); line-height: 1; }
+.cal-week-day.today .wd-num { color: var(--fc-red); }
+.cal-week-day .wd-monthlbl { font-family: var(--font-ui); font-size: 12px; color: var(--ink-70); }
+.cal-week-day .wd-count { margin-left: auto; font-size: 11px; color: var(--ink-70); font-weight: 500; }
+.cal-week-day .wd-empty { color: var(--ink-40); font-size: 13px; padding: var(--space-3) 0 0; font-family: var(--font-editorial); font-style: italic; }
+.cal-week-day .wd-leave {
+  display: flex; align-items: center; gap: var(--space-2);
+  padding: 6px 10px; margin-top: var(--space-2);
+  background: rgba(35,31,32,0.08); border-radius: var(--radius-sm);
+  font-size: 12px; font-weight: 500;
+}
+.cal-week-day .wd-leave.sick { background: rgba(35,31,32,0.18); color: var(--ink-100); }
+.cal-week-day .wd-leave.ph { background: rgba(216,31,38,0.10); color: var(--fc-red); }
+.cal-week-day .wd-leave .wd-leave-type { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 1px 5px; border-radius: 2px; background: rgba(35,31,32,0.15); margin-left: auto; }
+.cal-week-day .wd-job {
+  display: flex; align-items: flex-start; gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--line-soft);
+  cursor: pointer;
+}
+.cal-week-day .wd-job:last-child { border-bottom: none; }
+.cal-week-day .wd-time { font-family: var(--font-heading); font-weight: 700; font-size: 14px; color: var(--fc-black); min-width: 46px; flex-shrink: 0; }
+.cal-week-day .wd-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ink-70); margin-top: 7px; flex-shrink: 0; }
+.cal-week-day .wd-dot.critical { background: var(--fc-red); }
+.cal-week-day .wd-dot.urgent { background: var(--warning); }
+.cal-week-day .wd-body { flex: 1; min-width: 0; }
+.cal-week-day .wd-title { font-size: 14px; font-weight: 500; line-height: 1.3; }
+.cal-week-day .wd-meta { font-size: 12px; color: var(--ink-70); margin-top: 2px; }
 
 .cal-legend { display: flex; gap: var(--space-4); margin-top: var(--space-4); flex-wrap: wrap; font-size: 12px; color: var(--ink-70); }
 .cal-legend .lg-item { display: inline-flex; align-items: center; gap: 6px; }
@@ -639,13 +688,22 @@ ul, ol { list-style: none; }
     <!-- CALENDAR -->
     <section class="page" data-page="calendar">
       <div class="page-title">Calendar</div>
+
+      <div class="segmented" id="calViewSeg">
+        <button class="active" data-seg="week">Week</button>
+        <button data-seg="month">Month</button>
+      </div>
+
       <div class="cal-head">
-        <button class="icon-btn" onclick="shiftMonth(-1)"><i data-lucide="chevron-left"></i></button>
-        <div class="month" id="calMonthLabel">—</div>
-        <button class="icon-btn" onclick="shiftMonth(1)"><i data-lucide="chevron-right"></i></button>
+        <button class="icon-btn" onclick="shiftCal(-1)"><i data-lucide="chevron-left"></i></button>
+        <div class="period" id="calPeriodLabel">—</div>
+        <button class="icon-btn" onclick="shiftCal(1)"><i data-lucide="chevron-right"></i></button>
         <button class="icon-btn" onclick="calToday()"><i data-lucide="calendar-check"></i></button>
       </div>
-      <div class="cal-grid">
+
+      <div class="cal-week-list" id="calWeekList"></div>
+
+      <div class="cal-grid hidden" id="calMonthGrid">
         <div class="cal-weekdays"><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div></div>
         <div class="cal-days" id="calDays"></div>
       </div>
@@ -908,8 +966,10 @@ let state = {
   venueFilter: null,        // null = all
   jobFilter: { status: 'OPEN', priority: null, venue: null },
   jobDetailId: null,
+  calView: 'week',
   calMonth: new Date().getMonth(),
   calYear: new Date().getFullYear(),
+  calWeekStart: null,  // lazy-init to Monday of current week on first render
   prSeg: 'new',
   otSeg: 'totals',
   dirSeg: 'technicians',
@@ -1305,15 +1365,115 @@ function reopenJob(reqId) {
 }
 
 /* ---------- Calendar ---------- */
-function shiftMonth(delta) { state.calMonth += delta; if (state.calMonth < 0) { state.calMonth = 11; state.calYear--; } if (state.calMonth > 11) { state.calMonth = 0; state.calYear++; } renderCalendar(); }
-function calToday() { const d = new Date(); state.calMonth = d.getMonth(); state.calYear = d.getFullYear(); renderCalendar(); }
+const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const MONTH_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const DOW_SHORT = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+function shiftCal(delta) {
+  if (state.calView === 'week') {
+    const d = state.calWeekStart ? new Date(state.calWeekStart) : mondayOf(new Date());
+    d.setDate(d.getDate() + delta * 7);
+    state.calWeekStart = d;
+  } else {
+    state.calMonth += delta;
+    if (state.calMonth < 0) { state.calMonth = 11; state.calYear--; }
+    if (state.calMonth > 11) { state.calMonth = 0; state.calYear++; }
+  }
+  renderCalendar();
+}
+function calToday() {
+  const d = new Date();
+  state.calMonth = d.getMonth();
+  state.calYear = d.getFullYear();
+  state.calWeekStart = mondayOf(d);
+  renderCalendar();
+}
+function mondayOf(d) { const x = new Date(d); const day = (x.getDay() + 6) % 7; x.setDate(x.getDate() - day); x.setHours(0,0,0,0); return x; }
+
+document.addEventListener('click', e => {
+  const b = e.target.closest('#calViewSeg button');
+  if (!b) return;
+  document.querySelectorAll('#calViewSeg button').forEach(x => x.classList.remove('active'));
+  b.classList.add('active');
+  state.calView = b.dataset.seg;
+  renderCalendar();
+});
+
 function renderCalendar() {
-  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-  $('#calMonthLabel').textContent = `${months[state.calMonth]} ${state.calYear}`;
+  if (!state.calWeekStart) state.calWeekStart = mondayOf(new Date());
+  if (state.calView === 'week') {
+    $('#calWeekList').classList.remove('hidden');
+    $('#calMonthGrid').classList.add('hidden');
+    renderCalWeek();
+  } else {
+    $('#calWeekList').classList.add('hidden');
+    $('#calMonthGrid').classList.remove('hidden');
+    renderCalMonth();
+  }
+  renderLeaveList();
+}
+
+function renderCalWeek() {
+  const start = new Date(state.calWeekStart);
+  const end = new Date(start); end.setDate(end.getDate() + 6);
+  const sameMonth = start.getMonth() === end.getMonth();
+  $('#calPeriodLabel').textContent = sameMonth
+    ? `${MONTH_SHORT[start.getMonth()]} ${start.getDate()} — ${end.getDate()}, ${start.getFullYear()}`
+    : `${MONTH_SHORT[start.getMonth()]} ${start.getDate()} — ${MONTH_SHORT[end.getMonth()]} ${end.getDate()}, ${end.getFullYear()}`;
+
+  const today = new Date();
+  const todayStr = fmtDate(today);
+  const list = $('#calWeekList');
+  list.innerHTML = '';
+
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(start); d.setDate(start.getDate() + i);
+    const ds = fmtDate(d);
+    const leaves = LEAVES.filter(lv => ds >= lv.from && ds <= lv.to);
+    const jobs = visibleJobs().filter(j => !j.done && (j.appointmentTs || '').startsWith(ds))
+                  .sort((a,b) => (a.appointmentTs||'').localeCompare(b.appointmentTs||''));
+    const isToday = ds === todayStr;
+
+    const leavesHtml = leaves.map(lv => `
+      <div class="wd-leave ${lv.type.toLowerCase()}">
+        <span>${lv.tech}${lv.note?` — ${lv.note}`:''}</span>
+        <span class="wd-leave-type">${lv.type}</span>
+      </div>`).join('');
+
+    const jobsHtml = jobs.map(j => `
+      <div class="wd-job" onclick="openJobDetail('${j.reqId}')">
+        <div class="wd-time">${(j.appointmentTs||'').split(' ')[1]||'—'}</div>
+        <div class="wd-dot ${priClass(j.priority)}"></div>
+        <div class="wd-body">
+          <div class="wd-title">${j.title}</div>
+          <div class="wd-meta">${j.venue} · ${j.area} · ${j.assignedTo ? techName(j.assignedTo) : 'Unassigned'}</div>
+        </div>
+      </div>`).join('');
+
+    const countLabel = jobs.length ? `${jobs.length} job${jobs.length===1?'':'s'}` : '';
+    const emptyMsg = (!leaves.length && !jobs.length) ? `<div class="wd-empty">Nothing scheduled.</div>` : '';
+
+    list.appendChild(el(`
+      <div class="cal-week-day ${isToday?'today':''}">
+        <div class="wd-head">
+          <div class="wd-dow">${DOW_SHORT[i]}</div>
+          <div class="wd-num">${d.getDate()}</div>
+          <div class="wd-monthlbl">${MONTH_SHORT[d.getMonth()]}</div>
+          <div class="wd-count">${countLabel}</div>
+        </div>
+        ${leavesHtml}
+        ${jobsHtml}
+        ${emptyMsg}
+      </div>`));
+  }
+  lucide.createIcons();
+}
+
+function renderCalMonth() {
+  $('#calPeriodLabel').textContent = `${MONTH_NAMES[state.calMonth]} ${state.calYear}`;
   const first = new Date(state.calYear, state.calMonth, 1);
   const lastDay = new Date(state.calYear, state.calMonth+1, 0).getDate();
-  // Start grid on Monday
-  let startOffset = (first.getDay() + 6) % 7;
+  const startOffset = (first.getDay() + 6) % 7;
   const today = new Date();
   const todayStr = fmtDate(today);
   const grid = $('#calDays'); grid.innerHTML = '';
@@ -1322,30 +1482,36 @@ function renderCalendar() {
     const ds = fmtDate(d);
     const leaves = LEAVES.filter(lv => ds >= lv.from && ds <= lv.to);
     const jobs = visibleJobs().filter(j => !j.done && (j.appointmentTs || '').startsWith(ds));
-    const dots = jobs.slice(0, 6).map(j => `<span class="${priClass(j.priority)}"></span>`).join('');
-    const leaveStrip = leaves.slice(0,3).map(lv => `<div class="leave-strip ${lv.type.toLowerCase()}">${lv.tech.split(' ').pop()} • ${lv.type}</div>`).join('');
+    // On 68px cells: show 1 leave strip max, with +N overflow indicator
+    const leaveMain = leaves.slice(0, 1).map(lv => `<div class="leave-strip ${lv.type.toLowerCase()}">${lv.tech.split(' ').pop()}</div>`).join('');
+    const leaveMore = leaves.length > 1 ? `<div class="more-pill">+${leaves.length - 1} leave</div>` : '';
+    const dotsVisible = jobs.slice(0, 5);
+    const dots = dotsVisible.map(j => `<span class="${priClass(j.priority)}"></span>`).join('');
+    const moreJobs = jobs.length > 5 ? `<span class="more-pill">+${jobs.length - 5}</span>` : '';
     const todayCls = ds === todayStr ? ' today' : '';
-    return `<div class="cal-day${otherMonth?' other':''}${todayCls}" onclick="onCalDayClick('${ds}')"><div class="d-num">${d.getDate()}</div>${leaveStrip}${dots?`<div class="job-dot">${dots}</div>`:''}</div>`;
+    return `<div class="cal-day${otherMonth?' other':''}${todayCls}" onclick="onCalDayClick('${ds}')">
+      <div class="d-num">${d.getDate()}</div>
+      ${leaveMain}${leaveMore}
+      ${dots || moreJobs ? `<div class="job-dot">${dots}${moreJobs}</div>` : ''}
+    </div>`;
   };
 
-  // previous month tail
   for (let i = startOffset; i > 0; i--) {
-    const d = new Date(state.calYear, state.calMonth, 1 - i + 1); // adjust
-    const prev = new Date(state.calYear, state.calMonth, 0); prev.setDate(prev.getDate() - (i-1));
+    const prev = new Date(state.calYear, state.calMonth, 0);
+    prev.setDate(prev.getDate() - (i-1));
     grid.insertAdjacentHTML('beforeend', dayCell(prev, true));
   }
   for (let i = 1; i <= lastDay; i++) {
-    const d = new Date(state.calYear, state.calMonth, i);
-    grid.insertAdjacentHTML('beforeend', dayCell(d, false));
+    grid.insertAdjacentHTML('beforeend', dayCell(new Date(state.calYear, state.calMonth, i), false));
   }
-  // fill to 42 cells
   const filled = grid.children.length;
   for (let i = 1; i <= 42 - filled; i++) {
-    const d = new Date(state.calYear, state.calMonth+1, i);
-    grid.insertAdjacentHTML('beforeend', dayCell(d, true));
+    grid.insertAdjacentHTML('beforeend', dayCell(new Date(state.calYear, state.calMonth+1, i), true));
   }
+  lucide.createIcons();
+}
 
-  // leave list
+function renderLeaveList() {
   const ll = $('#leaveList');
   ll.innerHTML = LEAVES.length ? '' : `<li class="empty-state"><i data-lucide="umbrella"></i><div>No leave recorded.</div></li>`;
   LEAVES.forEach(lv => {

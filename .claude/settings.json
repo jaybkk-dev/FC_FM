@@ -1,0 +1,45 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(clasp push --force)",
+      "Bash(clasp deployments)",
+      "Bash(clasp list-files)",
+      "Bash(clasp status)",
+      "mcp__gsheets__read_full_sheet",
+      "mcp__gsheets__get_sheet_metadata",
+      "mcp__gsheets__read_range",
+      "Bash(git -C \"C:/Users/Jay/Documents/FC_FM\" status --short)",
+      "Bash(git -C \"C:/Users/Jay/Documents/FC_FM\" remote -v)",
+      "Bash(git -C \"C:/Users/Jay/Documents/FC_FM\" branch --show-current)",
+      "Skill(update-config)",
+      "Skill(update-config:*)",
+      "Bash(echo \"---exit: $?---\")",
+      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" repo create fm-dispatch-preview --public --source=. --description \"Phone preview of the FM Dispatch manager app \\(UI mock, no backend\\)\" --push)",
+      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" api -X POST repos/jaybkk-dev/fm-dispatch-preview/pages -f \"source[branch]=main\" -f \"source[path]=/\")"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd /c/Users/Jay/Documents/FC_FM && out=$(clasp deployments 2>&1); rc=$?; if [ $rc -ne 0 ] || echo \"$out\" | grep -qiE \"invalid_grant|invalid_rapt|reauth|not logged\"; then printf '%s' '{\"systemMessage\":\"clasp cannot push to Apps Script right now. Run `clasp.cmd login` in a PowerShell terminal before making any code changes.\",\"hookSpecificOutput\":{\"hookEventName\":\"SessionStart\",\"additionalContext\":\"CLASP PUSH WARNING: clasp cannot reach the Apps Script project (auth expired, offline, or unknown error). The PostToolUse auto-push on Write/Edit will fail silently. Before any .gs/.js/.html edits, tell the user to run `clasp.cmd login` in a PowerShell terminal. Do not trust that edits synced until this is resolved.\"}}'; fi"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd /c/Users/Jay/Documents/FC_FM && clasp push --force 2>&1 | tail -5"
+          }
+        ]
+      }
+    ]
+  }
+}

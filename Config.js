@@ -18,7 +18,7 @@ const OWNER_EMAIL     = 'jsebag@gmail.com';
 const ASSISTANT_EMAIL = 'pao@gigibangkok.com';
 
 // --- OPENAI -----------------------------------------------------
-const OPENAI_API_KEY = 'REDACTED_OPENAI_KEY_ROTATED';
+const OPENAI_API_KEY = 'REDACTED_OPENAI_KEY_NOW_IN_SCRIPT_PROPERTIES';
 const OPENAI_MODEL   = 'gpt-4o-mini';
 const OPENAI_URL     = 'https://api.openai.com/v1/chat/completions';
 
@@ -89,4 +89,4 @@ const COL_WIDTHS = {
 };
 
 
-// pushed 1775587509
+// pushed 1777827200 // dedup + client fallback

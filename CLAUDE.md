@@ -22,17 +22,18 @@ All `.gs` files share the **same global namespace**. Duplicate function names si
 
 ```
 CURRENT/
-├── WebApp.html              ← Frontend (HTML/CSS/JS, single file)
+├── WebApp.html              ← Frontend — staff submission form (HTML/CSS/JS, single file)
+├── FM_Dispatch.html         ← Frontend — mobile manager app (UI mock, ~1300 lines; not yet wired into doGet)
 └── NEW_SCRIPTS/             ← All backend .gs files
     ├── Config.gs            ← All constants: VENUE_CODE, IDs, API key, FORMAT spec
     ├── Menu.gs              ← Single onOpen(), operations menu only
     ├── AI.gs                ← OpenAI: callAI_(), translateText_(), classifyRequest_()
-    ├── Drive.gs             ← Shared Drive: folder creation, file upload
+    ├── Drive.gs             ← Shared Drive: folder creation, file upload (server-side LINE trigger)
     ├── Format.gs            ← Sheet formatting, trimEmptyRows, addManualInputRows
-    ├── WebApp.gs            ← doGet(), getVenueConfig(), submitRequest(), addUser(), removeUser()
+    ├── WebApp.gs            ← doGet(), getVenueConfig(), submitRequest(), addUser(), removeUser(), sendLineAfterUpload (with dedup)
     ├── Pipeline.gs          ← Import engine, archive, REQ_ID gen, dropdowns, triggers
     ├── EditTrigger.gs       ← Installable onEdit: instant archive, auto-timestamps
-    ├── Line.gs              ← LINE Messaging API: Flex Messages, doPost webhook, push notifications
+    ├── Line.gs              ← LINE Messaging API: Flex Messages, doPost webhook, push notifications, LINE_LOG sink, lineHealthCheck, diagnoseLastSubmission
     └── Setup.gs             ← One-time setup: protections, filtered views, checkboxes
 ```
 
@@ -40,11 +41,15 @@ CURRENT/
 
 | Resource | ID / Value |
 |----------|-----------|
-| Master Spreadsheet | `15g8iMPGPMJougY3CwQAozqKtXKWrEUMOxCs8-VT0v0g` |
-| Reference Spreadsheet | `1FExzbsxkJKdIp4tRvN5WRwqiVcYbMKYMbprrUIu-Psc` |
+| Master Spreadsheet | `15g8iMPGPMJougY3CwQAozqKtXKWrEUMOxCs8-VT0v0g` (current name `OSKB_FM_MASTER_REQUESTS`; rename to `FC_FM_MASTER_REQUESTS` pending) |
+| Reference Spreadsheet | `1FExzbsxkJKdIp4tRvN5WRwqiVcYbMKYMbprrUIu-Psc` (`FC_FM_REFERENCE`) |
 | Shared Drive Root | `0ADtrX772uxBkUk9PVA` |
 | Venue Code (pilot) | `OSKB` |
 | Owner Email | `jsebag@gmail.com` |
+| Public source repo | https://github.com/jaybkk-dev/FC_FM (blocked from new pushes — OpenAI key in history) |
+| FM Dispatch preview repo | https://github.com/jaybkk-dev/fm-dispatch-preview |
+| FM Dispatch phone URL | https://jaybkk-dev.github.io/fm-dispatch-preview/FM_Dispatch.html |
+| MCP server (Sheets+Drive) | `C:\Users\Jay\Documents\LA PATIS - MCP\server.py` (registered in `.mcp.json`) |
 
 All IDs live in `Config.gs`. To clone for another venue, change `VENUE_CODE` there.
 
@@ -177,7 +182,78 @@ During import, media link columns may contain `=HYPERLINK(...)` formulas. Use `g
 - **OpenAI API** key in Config.gs — used for translation and classification
 - **Shared Drive** access — script owner must have write access to the shared drive
 
-## Current Status (updated 8 Apr 2026)
+## Current Status (updated 16 May 2026)
+
+### Session 16 May 2026 — Asset Registry design (Phase 2)
+- Reviewed sample `OSKB_FM_ASSETS.xlsx` and existing form wiring (`data.assetId` already threads through `Webapp.js` into RAW_INTAKE col C / MANUAL_INPUT col E, but nothing reads from a registry yet)
+- **Decided: one spreadsheet, two tabs — not two files.** Avoids cross-file `IMPORTRANGE` drift when assets are renamed or deleted.
+  - Tab 1 `ASSETS` — registry + ID generator. Adding a row creates an asset.
+    Columns: `ASSET_ID, CATEGORY, AREA, DISPLAY_LABEL, SERIAL_NO, MODEL, INSTALL_DATE, WARRANTY_END, QR_URL, QR_IMAGE, NOTES, ACTIVE`
+  - Tab 2 `MAINTENANCE_LOG` — auto-populated from COMPLETED when the request carries an ASSET_ID.
+    Columns: `ASSET_ID, REQ_ID, DATE, CATEGORY, COST, PARTS, CONTRACTOR, WARRANTY_CLAIMED, NOTES`
+- **Decided: QR codes are URLs, not images.** Encode `https://<webapp>/exec?asset=OSKB-AC-001`. `QR_URL` is a formula from `ASSET_ID`; `QR_IMAGE` is `=IMAGE("https://quickchart.io/qr?text="&ENCODEURL(QR_URL))` for in-sheet preview. Menu function `generateQRLabels()` will render high-res PNGs to `OSKB/ASSETS/QR_LABELS/` for printing.
+- **Decided: canonical venue code stays `OSKB`** (sample file's `OSK_…` was inconsistent with Config.js / RAW_INTAKE / REQ_IDs).
+- **ID format still open.** Jay will paste a real appliance list; the candidate schemes (`OSKB-AC-001`, `OSKB-F1BH-AC-001`, etc.) get rendered side-by-side and the most readable one is locked. No code written until format is fixed.
+- Design notes saved at `c:\Users\Jay\Documents\FC_FM\Asset Registry - design notes.txt` (full open-decision list there for next-session reference)
+
+### Sessions late Apr → early May 2026 — FM Dispatch app, MCP, hooks, security
+- **FM Dispatch app (`FM_Dispatch.html`) built** as a mobile manager UI mock. Single-file HTML/CSS/JS, ~1300 lines. Phone-previewed via GitHub Pages.
+  - 7 dispatch venues (FLIX, GIGA, GIGR, LLFU, MRGO, OSKB, SNGS — FCHQ excluded)
+  - 9 screens: Home (KPI tiles + recent activity), Jobs (filter chips + priority-strip cards), Job Detail (assign / schedule / notes / mark done / reopen / request purchase / EN-TH toggle), Calendar (Week default + Month toggle, fixed 68px cells, leave chips), Purchases (New / Approval / Payment / Paid + FC stamp graphic), Overtime (4 techs, OT entry mirroring Google Form, mark-paid with slip), Directory (Techs / Contractors / Suppliers, `tel:` + LINE buttons), Settings, Audit log
+  - Login: simple name picker (Pao, Jay), no passwords. Global venue filter chip in top bar.
+  - Mobile UI fixes applied during real-device testing: `#app` switched to `100dvh` (Chrome Android URL bar was pushing bottom nav off-screen with `100vh`); `.bottom-nav` set to `position: fixed`; Calendar month view refactored to fixed 68px rows + `overflow: hidden` + `+N` overflow indicators.
+  - Mock data populated via MCP from real `FC_FM_REFERENCE` sheets (7 venues, 4 technicians, contractors + 5 suppliers, 25 sample jobs from REQUESTS, 4 purchase requests, 7 OT entries, 4 leave entries).
+  - **`?app=dispatch` routing in `doGet()` is NOT yet wired** — UI lives on the preview repo only. ~10-line backend change deferred until UI settles.
+- **Phone preview infrastructure:** new public repo `jaybkk-dev/fm-dispatch-preview` (Pages enabled). Cannot push to `jaybkk-dev/FC_FM` because the old OpenAI key is in commit history. Iteration loop: edit `FC_FM/FM_Dispatch.html` (master) → copy to `fm-dispatch-preview/FM_Dispatch.html` → git push → Pages redeploys in 30–60s → hard-refresh on phone.
+  - Preview URL: https://jaybkk-dev.github.io/fm-dispatch-preview/FM_Dispatch.html
+  - Preview working copy: `C:\Users\Jay\Documents\fm-dispatch-preview\`
+- **Security incident: OpenAI API key was committed to public `jaybkk-dev/FC_FM`.** Hardcoded in `Config.js` in commits `885f70a` and `eaf575b`. GitHub push protection blocked a later commit, surfacing the issue.
+  - **Action taken:** Jay rotated to `FC_FM_MASTER_REQUESTS_v2`, updated `Config.js`, verified translations still work, deleted the old key.
+  - **Still pending:** scrubbing the old key from commits `885f70a` / `eaf575b` via `git filter-repo` + force-push. Cosmetic at this point (exposure already happened) but worth doing for hygiene.
+- **MCP server registered for Claude Code** via new `.mcp.json` in repo root pointing at Jay's general-purpose Sheets+Drive server (`LA PATIS - MCP/server.py`). 13 tools available: `list_spreadsheets, get_sheet_metadata, read_range, read_full_sheet, read_multiple_ranges, search_in_sheet, get_named_ranges, write_range, append_rows, create_spreadsheet, get_file_info, list_folders, search_files`. Used to pull real venue / technician / contractor / OT data for the dispatch mock.
+- **SessionStart hook added** to `.claude/settings.json`: runs `clasp deployments` silently at session start; if clasp can't reach Apps Script (expired OAuth / `invalid_grant` / `invalid_rapt`), injects a "Run `clasp.cmd login`" warning into context. Closes a feedback loop where the auto-push PostToolUse hook had been failing silently for hours due to expired OAuth, costing ~2 hours of misdiagnosis. (Cannot catch mid-session auth expirations.)
+- **Stop hook removed** from `.claude/settings.json` — was firing relentlessly and re-arguing the same point. PostToolUse auto-push hook unchanged.
+- **PowerShell gotcha:** `clasp login` fails with "running scripts is disabled" on default execution policy. Workaround: `clasp.cmd login` or Git Bash terminal profile.
+- **Files changed:** `FM_Dispatch.html` (NEW, ~1300 lines), `.mcp.json` (NEW), `.claude/settings.json` (SessionStart hook + allowlists), `Config.js` (rotated OpenAI key)
+
+### Session 29 Apr 2026 — LINE monthly quota exhausted; silent failures now surfaced
+- Staff reported requests not reaching the LINE maintenance group. RAW_INTAKE rows were being written and files uploaded, but no Flex Message arrived
+- **Root cause:** the LINE Official Account hit its monthly push quota. Thailand free Communication plan = **300 messages/month**; dashboard showed 291/300 and the actual usage had already crossed 300. LINE API returned `429 {"message":"You have reached your monthly limit."}` on every push
+- `notifyLineGroup_` was wrapping `sendLineMessage_` in `try { ... } catch (e) { Logger.log(...) }` — a deliberate "never block a submission for a LINE failure" pattern. Consequence: zero visibility when LINE quota / token / membership failed. No error surfaced in the execution log, no row written anywhere
+- **Changes made (Line.js, Webapp.js, Drive.js, WebApp.html):**
+  - `notifyLineGroup_` now writes every LINE failure to a new auto-created `LINE_LOG` sheet (cols: TIMESTAMP, REQ_ID, TITLE, AUTHOR, REASON) via new helper `logLineFailure_()`. Silent failures impossible going forward.
+  - Added `lineHealthCheck()` — pings `GET /v2/bot/group/{id}/summary` to verify the bot is still in the production OSKAR MAINTENANCE group. No message sent.
+  - Added `diagnoseLastSubmission()` — replays the last RAW_INTAKE row through `buildFlexMessage_` + `sendLineMessage_` to `LINE_TEST_GROUP_ID` so staff are never bothered.
+  - `sendLineAfterUpload` now dedups via `CacheService` (5 min TTL on `reqId`) — server-side trigger and client-side fallback both call it safely.
+  - `uploadFilesBackground` / `uploadEventFilesBackground` in `WebApp.html` now ALSO call `sendLineAfterUpload` client-side when the chain completes, as a fallback if the server-side `triggerLine` path drops. Dedup ensures no double-send.
+  - `uploadSingleFile` (Drive.js) now logs `triggerLine=YES (reqId=...)` or `triggerLine=no` for every upload, so the next failing submission tells us whether the deployed HTML is sending the trigger.
+- **Decision:** stay on the free 300/msg/month plan. Real production demand at OSKB is ~30–40 messages/month (April had ~20 real submissions; the bulk of the 291 was Jay's own testing). Light plan (~₿1,200/month) deferred until rollout to a second venue.
+- **Quota reset:** midnight 1 May JST (≈22:00 30 Apr Bangkok). Until then, no LINE pushes will succeed regardless of code state.
+- **Files changed:** `Line.js` (notifyLineGroup_, logLineFailure_, lineHealthCheck, diagnoseLastSubmission), `Webapp.js` (CacheService dedup at top of sendLineAfterUpload), `Drive.js` (triggerLine log line), `WebApp.html` (client-side fallback in both upload chains)
+
+### Session 25 Apr 2026 — Fixed LINE notification race condition
+- Jay flagged 3 RAW_INTAKE rows from 24 Apr (REQ 053, 054, 057, all from JANE) where only row 057 produced a LINE Flex in the maintenance group
+- Execution logs confirmed: `submitRequest` + `uploadSingleFile` ran for all three, but `sendLineAfterUpload` only fired for 057
+- **Root cause — client-side race in `WebApp.html`:** the upload chains in `uploadFilesBackground()` and `uploadEventFilesBackground()` read globals `attachedFiles` / `eventFiles`, `submissionData`, and `uploadFailures`. `resetApp()` (triggered by "Submit Another Request") zeroes those globals. When the user tapped that button before the async upload chain finished, the success callback fired with `length === 0` and `submissionData === null`, so the "all done" branch returned without calling `sendLineAfterUpload`
+- **Fix applied:** `onSubmitSuccess` and the event-submit handler now snapshot `attachedFiles` / `eventFiles` and create a local `failures` array at chain start. `uploadFilesBackground` / `uploadEventFilesBackground` now take `(folderId, idx, files, submission, failures)` as params and no longer read globals. `resetApp()` can no longer wipe an in-flight chain
+- **Files changed:** `WebApp.html` (L1206-1227, L1237-1261, L2135-2153, L2160-2184). Clasp auto-push fired on each edit
+- **Deployed:** Jay redeployed on 25 Apr 2026 — fix now live on production URL
+
+### Session 25 Apr 2026 (cont.) — LINE unsend: removed dead code
+- Checked whether the bot can delete Flex messages from a LINE group. **It cannot.**
+- `unsendLineMessage()` was targeting `https://api.line.me/v2/bot/message/{id}/cancel` — not a real LINE Messaging API endpoint (would return 404). The LINE Messaging API has no bot-side delete endpoint for group messages; "unsend" in the LINE app is client-side UI, personal chats only, 24h window
+- Also no code ever captured `messageId` from push responses, so the function had no valid input anyway
+- **Removed `unsendLineMessage()` and `unsendTestMessage()` from `Line.js`** along with their doc comments
+
+### Session 20 Apr 2026 — Asset Registry kickoff (analysis only)
+- Inspected sample file `OSKB_FM_ASSETS.xlsx` — 4 sheets: `CONFIG` (areas), `ID_GENERATOR` (VENUE+AREA+GROUP+TYPE → ID), `APPLIANCES`, `HVAC` (columns: ASSET_ID, VENUE_CODE, AREA_CODE, GROUP_CODE, TYPE_CODE, DISPLAY_LABEL, SERIAL_NO, MODEL, INSTALL_DATE, WARRANTY_END, NOTES, ACTIVE)
+- Confirmed form already passes `data.assetId` through `Webapp.js` (cols C/E writes) but nothing reads from a registry yet
+- **Open design questions, awaiting Jay's direction:**
+  1. ASSET_ID format — sample uses `OSK_F1KC_FZ001` vs CLAUDE.md's `OSKB-AC-001`. Need canonical pick.
+  2. One flat `ASSETS` sheet (CATEGORY column) vs per-category tabs (sample style)
+  3. First slice — schema finalization, form dropdown wiring, data population, or QR generation
+- No code changed this session
+
 
 ### LINE Integration (fully working)
 - **LINE Official Account:** "FC MAINTENANCE" (one account for all venues)
@@ -234,13 +310,29 @@ During import, media link columns may contain `=HYPERLINK(...)` formulas. Use `g
 When using Python/Bash to modify files directly, the PostToolUse hook does NOT auto-push. Run `clasp push --force` manually after such operations.
 
 ### Pending / Not Yet Done
-1. **Expense approval section UI** — white card background not rendering correctly, needs styling fix
-2. **Voice-to-text** — approach TBD (client-side Speech API vs server-side Whisper)
-3. **Dedicated test functions** — most test functions in the CLAUDE.md table not yet built (only `testLineFlex`, `testLineFlexWithImages`, `runSystemCheck` exist)
-4. **Cleanup test data** — delete test rows from RAW_INTAKE/REQUESTS/EXPENSE_APPROVAL, reset counters
-5. **Asset Registry** — Phase 2 (see Roadmap)
-6. **Manager dispatch app** — separate frontend for Jay + assistant to assign/track/close jobs from phone
-7. **Clone to other venues** — change `VENUE_CODE` in Config.gs and repeat setup
+1. **LINE notification race condition** — **FIXED 25 Apr 2026** (patched + redeployed). Closure-local snapshots added to `onSubmitSuccess` and the event-support handler; `uploadFilesBackground` / `uploadEventFilesBackground` no longer read globals
+2. **LINE silent failures** — **FIXED 29 Apr 2026.** All failures now write to `LINE_LOG` sheet via `logLineFailure_`. Diagnostics (`lineHealthCheck`, `diagnoseLastSubmission`) added. Dedup + client-side fallback added.
+3. **Redeploy WebApp.html** — required to make the 29 Apr client-side fallback live. .gs changes already active (Apps Script always runs Head).
+4. **Verify post-reset (1 May 2026)** — first staff submission after midnight 1 May JST should arrive in LINE. If not, check `LINE_LOG` for the new failure reason.
+5. **Asset Registry — provide real OSKB appliance list.** Jay to paste a list (what / where / quantity). Candidate ID schemes get rendered side-by-side. Once format is locked, build `OSKB_FM_ASSETS` spreadsheet with `ASSETS` tab + auto-generated `QR_URL` / `QR_IMAGE` columns + menu function for high-res QR export. `MAINTENANCE_LOG` and form integration follow in a second pass.
+6. **FM Dispatch `?app=dispatch` routing** — wire `FM_Dispatch.html` into `doGet()` so the production URL serves either submission form or dispatch app based on query param. ~10-line change in `Webapp.js`. Deferred until UI settles.
+7. **FM Dispatch backend wiring** — incremental after UI settles: AUDIT_LOG sheet, PURCHASE_REQUESTS sheet, OT tracker integration, real Drive photo reads, LINE Flex on approval / payment / completion.
+8. **FM Dispatch UI tweaks** — Jay has a batch of edits to apply in one revision pass.
+9. **Master spreadsheet rename** — `OSKB_FM_MASTER_REQUESTS` → `FC_FM_MASTER_REQUESTS` (File → Rename in the sheet UI). Code already references the unified name.
+10. **Scrub OpenAI key from FC_FM git history** — `git filter-repo` + force-push on commits `885f70a` and `eaf575b`. Key already rotated; this is hygiene only.
+11. **Expense approval section UI** — white card background not rendering correctly, needs styling fix
+12. **Voice-to-text** — approach TBD (client-side Speech API vs server-side Whisper)
+13. **Dedicated test functions** — most test functions in the CLAUDE.md table not yet built (only `testLineFlex`, `testLineFlexWithImages`, `runSystemCheck`, `lineHealthCheck`, `diagnoseLastSubmission` exist)
+14. **Cleanup test data** — delete test rows from RAW_INTAKE / REQUESTS / EXPENSE_APPROVAL, reset counters. Testing burns LINE quota 1:1 with real submissions, so heavy testing is what exhausted April's cap.
+15. **Manager dispatch app rollout** — after UI settles + backend wired
+16. **Clone to other venues** — change `VENUE_CODE` in Config.gs and repeat setup
+
+### LINE failure surfacing (added 29 Apr 2026)
+- New `LINE_LOG` sheet auto-creates on first failure. One row per failed push: `TIMESTAMP, REQ_ID, TITLE, AUTHOR, REASON` (full stack)
+- `lineHealthCheck()` — verifies bot is still in the OSKAR MAINTENANCE production group via `/v2/bot/group/{id}/summary`. No message sent.
+- `diagnoseLastSubmission()` — replays the last RAW_INTAKE row through the Flex pipeline to `LINE_TEST_GROUP_ID` (not production). Distinguishes "Flex builder broken" from "production group / quota broken".
+- `sendLineAfterUpload` dedupes via `CacheService` (key = `lineSent_<reqId>`, TTL 300s). Both server-side trigger and client-side fallback may call it; only the first wins.
+- Client-side fallback: after the upload chain finishes, `WebApp.html` calls `sendLineAfterUpload` even if server-side `triggerLine` didn't run. Belt-and-suspenders.
 
 ### Known working features
 - Web form submission (maintenance + event support)
@@ -261,8 +353,9 @@ When using Python/Bash to modify files directly, the PostToolUse hook does NOT a
 - Desktop banner ("works best on phones")
 
 ### Known issues
+- **LINE quota constraint** — free Thailand Communication plan caps at **300 push messages/month**. Resets midnight 1st of each month JST. Tests count against the same budget as real submissions because they share the same bot/channel/token. Real production demand at one venue is well under 300/month; heavy testing is what exhausts it.
 - **Expense section UI** — styling doesn't match mockup (white card not rendering properly on gold background)
-- **Clasp push reliability** — clasp sometimes says "up to date" when it hasn't pushed. Workaround: append a comment to force a diff, then push.
+- **Clasp push reliability** — clasp sometimes says "up to date" when it hasn't pushed. Workaround: append a comment to force a diff, then push. Verify via `clasp pull` (file count should match) and grep the local file after.
 
 ## Development Roadmap
 

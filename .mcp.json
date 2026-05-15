@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "gsheets": {
+      "command": "C:\\Users\\Jay\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "args": ["C:\\Users\\Jay\\Documents\\LA PATIS - MCP\\server.py"]
+    }
+  }
+}

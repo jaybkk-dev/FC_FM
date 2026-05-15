@@ -1,0 +1,143 @@
+# FC_FM — Session Summary
+
+Long working session covering the LINE notification race condition, the FM Dispatch mobile app build, and a handful of tooling / security side-quests. Notes are grouped by theme, not chronology.
+
+---
+
+## Fixes shipped
+
+### LINE notification race condition (URGENT bug)
+**Symptom:** When a user submitted two requests back-to-back via "Submit Another Request", only the second one's LINE Flex message arrived in the maintenance group. The first one's `sendLineAfterUpload` never fired. Jane hit it twice on 24 Apr; reproduced by Jay on 25 Apr.
+
+**Root cause:** Client-side `google.script.run` callback chain was fragile. Two layered problems:
+1. `resetApp()` was wiping the globals (`attachedFiles`, `submissionData`) that the in-flight upload chain relied on. → Fixed first by snapshotting state into closure-locals in `onSubmitSuccess` and the event-support submit handler.
+2. That fix wasn't enough. Starting a new `google.script.run.submitRequest()` while an earlier `uploadSingleFile` success-handler is still pending **drops the older callback** (undocumented but empirically reliable). The terminal `sendLineAfterUpload` call was never made for the first submission.
+
+**Final fix (the one that holds):** Moved the LINE trigger server-side. `uploadSingleFile` now accepts a `triggerLine: { folderId, submission }` payload on the last file; after the upload (success or failure), the server itself calls `sendLineAfterUpload` internally. Client no longer owns the completion path.
+
+**Files:** `Drive.js` (uploadSingleFile, 2 try/catch trigger blocks), `WebApp.html` (uploadFilesBackground + uploadEventFilesBackground — removed terminal client-side LINE call, added isLast flag).
+
+**Why it kept "failing" during testing:** `clasp push --force` had been failing silently for hours due to expired OAuth (see Tooling → SessionStart hook). My edits sat on disk but never reached Apps Script. Once Jay reauthed and pushed, the fix went live.
+
+**Status:** Code deployed. Still owed: one clean dual-submit test from Jay on the post-reauth deploy to confirm it actually works in production.
+
+### Removed dead code: `unsendLineMessage`
+`Line.js` had an `unsendLineMessage(messageId)` function targeting `https://api.line.me/v2/bot/message/{id}/cancel`. That endpoint **does not exist** in the LINE Messaging API. LINE has no bot-side delete for group messages; the "Unsend" feature in the LINE app is client-side UI, personal chats only, 24h window, never exposed to bots. Plus no code was ever capturing `messageId` from push responses, so even if the endpoint existed there'd be nothing to pass.
+
+**Status:** `unsendLineMessage` and `unsendTestMessage` removed from `Line.js`.
+
+---
+
+## New work: FM Dispatch app (mobile manager app)
+
+Built `FM_Dispatch.html` — single-file HTML/CSS/JS, mobile-first, served eventually via `?app=dispatch` routing on the same Apps Script deployment as the submission form. Currently lives as a UI mock for phone-testing.
+
+### Scope confirmed with Jay
+- 7 dispatch venues: FLIX, GIGA, GIGR, LLFU, MRGO, OSKB, SNGS (FCHQ — the office — excluded)
+- Login: simple name picker (Pao, Jay), no passwords
+- Global venue filter chip in the top bar (applies to Home, Jobs, Calendar)
+- Strict FC Group design system per `DESIGN.md` — FC Red (`#D81F26`), FC Black (`#231F20`), FC Cream (`#EEE7DC`); Inter + Roboto Slab + Jost + Lora; squared 2–4px corners, Lucide line icons, no venue-specific colors in app chrome
+- FC stamp graphic used for `APPROVED` / `PAID` / `COMPLETED` states
+
+### Screens (5 bottom tabs + 4 secondary)
+1. **Home (Dashboard)** — KPI tiles (Open / Unassigned / Scheduled today / Overdue), priority counters, recent activity feed
+2. **Jobs** — filter chips, priority-strip cards, real REQUESTS data populated from MCP
+3. **Job Detail** — full context, photo strip, EN/TH lang toggle, assign/reassign (with category-filtered tech+contractor picker), schedule (native date/time picker), notes editor, mark done (optional after-photo + closure note), reopen, request purchase, per-job history
+4. **Calendar** — Week view (default) + Month view toggle. Week view: vertical day cards with time-ordered jobs, leave chips with tech name/reason. Month view: equal-height 68px cells with day number + leave strip + priority dots + `+N` overflow
+5. **Purchases** — New / Approval / Payment / Paid segments; quotation upload, link to job, approver/payer pickers, FC stamp on approved+paid cards
+6. **Overtime** — Per-tech totals (4 techs from Reference sheet), new-entry form mirroring the existing Google Form schema (venue / tech / date / start-end / type / Sun-PH flag → auto-computed hours, routed to base or special fare), history view, mark-paid flow with slip upload
+7. **Directory** — Technicians / Contractors / Suppliers tabs, `tel:` and LINE buttons per contact, FAB for new entry
+8. **Settings** — venue filter shortcut, user switch, sign out
+9. **Audit log** — Activity feed of every state change
+
+### Mock data
+Populated from real data pulled via MCP:
+- 7 venues from `FC_FM_REFERENCE` → VENUES tab
+- 4 technicians from TECHNICIANS tab (CHANG LERT, CHANG YOON, CHANG NUHM, HM DETCH)
+- Contractors from CONTRACTORS tab + 5 suppliers Jay typed out (Weerawat / Refrigeration Service / Charoensin / Asia Electronics / Thai Sang Charoen)
+- 25 sample jobs from real REQUESTS rows (test rows stripped)
+- 4 purchase requests in different states with thumbnails from `PURCHASE SAMPLES/IMG1-4`
+- 7 OT entries pulled from `TECH TEAM OT TRACKER` CLEAN sheet
+- 4 leave entries (PTO / PH / Sick)
+
+### Phone preview infrastructure
+Cannot push to `jaybkk-dev/FC_FM` (blocked by OpenAI key in earlier commit history — see Security below). Spun up a fresh public repo: **`jaybkk-dev/fm-dispatch-preview`**. Pages enabled.
+
+**Phone URL:** https://jaybkk-dev.github.io/fm-dispatch-preview/FM_Dispatch.html
+
+**Iteration loop for UI tweaks:** edit `FC_FM/FM_Dispatch.html` (master) → copy to `fm-dispatch-preview/FM_Dispatch.html` → git push → Pages redeploys in ~30–60s → hard-refresh on phone.
+
+### Mobile UI fixes applied during testing
+- Bottom nav was being pushed off-screen by Chrome Android's URL bar (100vh issue). Switched `#app` to `100dvh` + made `.bottom-nav` `position: fixed`. Tabs now stay anchored.
+- Calendar month view had unbalanced row heights (empty weeks at 72px, busy weeks taller). Refactored to fixed 68px rows + `overflow: hidden` + `+N` overflow indicators.
+- Added Week view (vertical day cards) as the default, with Week/Month toggle.
+
+---
+
+## Tooling
+
+### MCP server registration
+Jay's general-purpose Google Sheets + Drive MCP server (at `LA PATIS - MCP/server.py`, despite the name) was registered for Claude Desktop but not Claude Code. Created `.mcp.json` in `FC_FM` root pointing at his Python 3.13 interpreter + `server.py`. 13 tools now available: `list_spreadsheets`, `get_sheet_metadata`, `read_range`, `read_full_sheet`, `read_multiple_ranges`, `search_in_sheet`, `get_named_ranges`, `write_range`, `append_rows`, `create_spreadsheet`, `get_file_info`, `list_folders`, `search_files`. Used immediately to pull real venue codes, technicians, contractors, REQUESTS rows, and OT tracker fields for the dispatch app mock data.
+
+### SessionStart hook — clasp auth health check
+Added a `SessionStart` hook to `.claude/settings.json` that runs `clasp deployments` silently at the start of each new Claude Code session. If clasp can't reach Apps Script (expired OAuth / `invalid_grant` / `invalid_rapt` / network / etc.), injects a prominent warning into the session context: "Run `clasp.cmd login` in a PowerShell terminal before any code changes."
+
+**Why this exists:** the PostToolUse hook running `clasp push --force` on every file edit was failing silently for the entire first half of this session due to an expired OAuth token. Multiple "fixes" appeared to be deployed but never actually reached Apps Script. Cost ~2+ hours of misdiagnosis. The SessionStart hook closes this loop for future sessions. (Note: it can't catch mid-session auth expirations — the auto-push hook would still fail silently then.)
+
+Also saved a feedback memory entry: `feedback_clasp_auth.md` — "If a deployed fix behaves like old code, check clasp auth before re-diagnosing."
+
+### Stop hook removed
+The Stop hook prompting Claude to update CLAUDE.md's Current Status section was firing relentlessly and re-arguing the same point. Removed from `.claude/settings.json` per Jay's request. PostToolUse auto-push hook unchanged.
+
+### PowerShell vs bash gotcha
+`clasp login` in PowerShell hit `cannot be loaded because running scripts is disabled` (default execution policy blocks `.ps1` wrappers). Workaround: use `clasp.cmd login`, or switch the VS Code default terminal profile to Git Bash.
+
+---
+
+## Security: OpenAI API key in public repo history
+
+GitHub push protection blocked the first commit attempt because the OpenAI API key for `FC_FM_MASTER_REQUESTS` had been hardcoded in `Config.js` in two earlier commits (`885f70a` "Initial pull from Apps Script", `eaf575b` "LINE integration..."). Those commits are already in `origin/master` on the public `jaybkk-dev/FC_FM` repo — the key has been **publicly exposed for some time**, regardless of push protection blocking new commits.
+
+**Action taken:** Jay rotated the key — created new `FC_FM_MASTER_REQUESTS_v2` in the OpenAI dashboard, updated `Config.js`, verified translations still work via a test submission, then deleted the old key.
+
+**Still pending:** rewriting FC_FM git history to scrub the old key from commits `885f70a` and `eaf575b`. Cosmetic at this point since exposure already happened, but worth doing eventually for hygiene. Would require `git filter-repo` + force-push. Deferred.
+
+---
+
+## Pending / open items
+
+| Item | Status | Notes |
+|------|--------|-------|
+| Verify server-side LINE trigger fix works | Awaiting Jay's test | Dual-submit test on the post-reauth deploy. Expected: both LINE Flex messages arrive; `sendLineAfterUpload` no longer shows as a separate Web-app execution (now internal to `uploadSingleFile`). |
+| Rewrite FC_FM git history to scrub OpenAI key | Deferred | Force-push required. Key already exposed publicly; this is hygiene. |
+| Apps Script `?app=dispatch` routing in `doGet()` | Deferred | Wires `FM_Dispatch.html` to the real production URL. ~10-line change in `Webapp.js`. Do when UI settles. |
+| FM Dispatch backend wiring | Deferred per Jay | HTML built first (one coherent UI pass), backend incremental: AUDIT_LOG sheet, VENUES tab in Reference (already exists), PURCHASE_REQUESTS sheet, OT tracker integration, real Drive photo reads, LINE Flex on approval/payment/completion. |
+| Master spreadsheet rename | Pending Jay | `OSKB_FM_MASTER_REQUESTS` → `FC_FM_MASTER_REQUESTS` (drop OSKB). File → Rename in the sheet UI. Code already references the unified name. |
+| FM_Dispatch UI tweaks list | Awaiting Jay | Jay said he has "quite a few edits to make" — collecting them in one batch for a single revision pass. |
+| Asset Registry (Phase 2) | Deferred | Pre-existing roadmap item. |
+| Manager dispatch app rollout | After UI settles + backend wired | This session was the design + mock build. |
+| Voice-to-text | Deferred | Pre-existing roadmap item. |
+
+---
+
+## Files touched this session
+
+| File | Change |
+|------|--------|
+| `Drive.js` | `uploadSingleFile` accepts `triggerLine` payload and fires `sendLineAfterUpload` server-side (success + failure paths). |
+| `WebApp.html` | Closure-local snapshot pattern in submit handlers; `uploadFilesBackground` / `uploadEventFilesBackground` now stateless w.r.t. globals and pass `triggerLine` on the last file. |
+| `Line.js` | Removed dead `unsendLineMessage` and `unsendTestMessage` functions. |
+| `FM_Dispatch.html` | NEW. Full single-file mobile dispatch app mock. ~1300 lines. |
+| `.mcp.json` | NEW. Registers `gsheets` MCP server for Claude Code. |
+| `.claude/settings.json` | Added SessionStart hook for clasp auth check; removed Stop hook; allowlisted MCP tools and several Bash commands. |
+| `CLAUDE.md` | Multiple Current Status section updates (now deprecated by this summary file). |
+| `~/.claude/projects/.../memory/feedback_clasp_auth.md` | NEW memory: "if a deployed fix behaves like old code, check clasp auth first". |
+| `~/.claude/projects/.../memory/MEMORY.md` | Indexed the new memory. |
+
+### New external resources
+
+| Resource | URL / location |
+|----------|----------------|
+| FM Dispatch preview repo | https://github.com/jaybkk-dev/fm-dispatch-preview |
+| FM Dispatch phone URL (live) | https://jaybkk-dev.github.io/fm-dispatch-preview/FM_Dispatch.html |
+| Preview working copy | `C:\Users\Jay\Documents\fm-dispatch-preview\` |

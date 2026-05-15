@@ -1,0 +1,83 @@
+# Asset Registry — Design Notes
+
+**Session date:** 2026-05-16
+**Status:** Design phase. No code written. Awaiting real appliance list from Jay to lock the ID format.
+
+---
+
+## Goal
+
+Build the FC_FM Asset Registry (Phase 2 of the roadmap).
+
+Every physical asset at OSKB (AC units, fryers, freezers, hood fans, etc.) gets a unique ID and a printable QR code. Staff scan the QR on broken equipment, the maintenance app opens with the ASSET_ID pre-filled. Over time, every request and every completed repair is tied back to the asset — building a real maintenance history per appliance: cumulative cost, failure frequency, warranty status.
+
+---
+
+## What was reviewed this session
+
+- Sample file `OSKB_FM_ASSETS.xlsx` (4 sheets: CONFIG, ID_GENERATOR, APPLIANCES, HVAC)
+- Existing form code already threads `data.assetId` through `Webapp.js` (RAW_INTAKE col C, MANUAL_INPUT col E) — no registry connected yet
+- ID format in sample (`OSK_F1KC_FZ001`) conflicts with CLAUDE.md example (`OSKB-AC-001`)
+
+---
+
+## Decisions made
+
+### 1. One spreadsheet, two tabs — not two separate files
+
+Jay's instinct was to split into two spreadsheets: one for ID/QR generation, one for repair tracking. Conceptually clean, but two separate files means cross-file `IMPORTRANGE` lookups in Apps Script — slow, fragile, and drift-prone when an ID is renamed or deleted in one but not the other.
+
+**Decision:** single spreadsheet `OSKB_FM_ASSETS` with two tabs.
+
+- **Tab 1 — `ASSETS`**: the registry and the ID generator. Adding a row creates an asset.
+  Proposed columns: `ASSET_ID`, `CATEGORY`, `AREA`, `DISPLAY_LABEL`, `SERIAL_NO`, `MODEL`, `INSTALL_DATE`, `WARRANTY_END`, `QR_URL`, `QR_IMAGE`, `NOTES`, `ACTIVE`.
+- **Tab 2 — `MAINTENANCE_LOG`**: one row per completed job tied to an asset. Auto-populated from the COMPLETED sheet when the request carries an `ASSET_ID`.
+  Proposed columns: `ASSET_ID`, `REQ_ID`, `DATE`, `CATEGORY`, `COST`, `PARTS`, `CONTRACTOR`, `WARRANTY_CLAIMED`, `NOTES`.
+
+### 2. QR codes don't need their own container
+
+A QR code is just an encoded URL — e.g. `https://<webapp>/exec?asset=OSKB-AC-001`.
+
+Mechanism:
+- `QR_URL` column = formula auto-generated from `ASSET_ID`
+- `QR_IMAGE` column = `=IMAGE("https://quickchart.io/qr?text="&ENCODEURL(QR_URL))` for visual review in the sheet
+- Menu function `generateQRLabels()` renders high-res PNGs to a Drive folder (`OSKB/ASSETS/QR_LABELS/`) for printing on physical labels
+
+### 3. Canonical venue code is `OSKB`
+
+Sample file used `OSK_…` in places — that was inconsistent. Everything in Config.js, RAW_INTAKE, REQ_IDs, LINE messages uses `OSKB`. Sticking with `OSKB`.
+
+---
+
+## Open decisions
+
+### ID format — to be decided with real data
+
+Jay's call: rather than guess between formats, he will paste a list of real OSKB appliances and we'll render the same list in 3-4 candidate ID schemes side-by-side. Pick the one that reads best at a glance and handles duplicates cleanly (e.g. two identical fryers in the same area).
+
+Input needed from Jay:
+- What it is (e.g. walk-in freezer, split AC, fryer, ice machine)
+- Where it is (floor + front/back, e.g. F1 BH, F2 FH)
+- Quantity if duplicated
+
+Format guidance from Jay:
+- For Oskar (2 floors), useful to encode `F1` vs `F2`, and `FH` (front of house) vs `BH` (back of house)
+- Simpler than the sample's `F1KC` style
+
+Candidate schemes to test once list is provided:
+1. `OSKB-AC-001` — type + ordinal
+2. `OSKB-F1BH-AC-001` — floor + section + type + ordinal
+3. `OSKB-F1-BH-AC-001` — separators between every part
+4. Possibly others depending on what the real list shows
+
+### Other open items
+- Final schema for `ASSETS` and `MAINTENANCE_LOG` (current proposal above is a starting point — may shift after real data is reviewed)
+- Where the spreadsheet lives — new file in the OSKB Drive folder, or new tab inside the existing master? (Leaning new file: per-venue isolation matches the multi-venue roadmap.)
+- QR rendering library — QuickChart is the current frontrunner (free, no auth, returns PNG). Google Charts QR API works but is deprecated.
+- How `MAINTENANCE_LOG` gets populated — onEdit trigger when DONE is checked, or a periodic batch sync from COMPLETED.
+
+---
+
+## Next step
+
+Jay sends a list of real OSKB appliances with location. I render the candidate ID schemes side-by-side. Once a format is locked, I build the `OSKB_FM_ASSETS` spreadsheet with the `ASSETS` tab, the auto-generated `QR_URL` + `QR_IMAGE` columns, and a menu function for high-res QR export. `MAINTENANCE_LOG` and form integration follow in a second pass.
