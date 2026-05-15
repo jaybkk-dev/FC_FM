@@ -247,6 +247,14 @@ When the user asks for a commit:
 
 ## Current Status (updated 16 May 2026)
 
+### Session 16 May 2026 — Secrets migration, history scrubs, file-size cap, video upload fix
+- **Staff reported a second case of videos failing to upload** from the submission form ("file too large" alert). Root cause: `WebApp.html:1067` capped non-image files at **5 MB raw**, but modern phone videos run 10–30 MB even for a few seconds. **Raised `MAX_RAW_SIZE` to 25 MB** (~30s of 1080p phone video; Apps Script `google.script.run` handles ~50 MB payloads, base64 inflates 33%, so 25 MB raw leaves headroom). Unified the three size-check sites (main / expense / event uploads) to read from a shared `MAX_RAW_SIZE` / `MAX_RAW_MB` constant so future bumps stay consistent. **Requires WebApp.html redeploy to go live.**
+- **First history scrub** (OpenAI key): force-pushed `jaybkk-dev/FC_FM` had been blocked by GitHub push protection because commits `885f70a` / `eaf575b` carried the old (already-rotated) OpenAI key. Ran `git filter-repo --replace-text` to remove the literal from every commit; simultaneously refactored the live v2 key out of `Config.js` and behind a new `getOpenAIKey_()` helper in AI.js that reads from `PropertiesService.getScriptProperties()`. Force-pushed. Push protection no longer triggers on this repo.
+- **Second history scrub** (LINE secrets): GitGuardian alerted on `LINE_CHANNEL_ACCESS_TOKEN` minutes after the force-push — the LINE token was still in `Config.js`. Same treatment: new `getLineProp_(name)` helper in Line.js, all four LINE constants (`LINE_CHANNEL_ACCESS_TOKEN`, `LINE_GROUP_ID`, `LINE_TEST_GROUP_ID`, `LINE_EXPENSE_GROUP_ID`) moved to Script Properties, 11 call sites refactored, `notifyLineGroup_` restructured so property-read failures still route to `LINE_LOG`. `git filter-repo` scrubbed all four strings from history. Force-pushed clean.
+- **`.gitignore` added** to filter screenshots, ad-hoc images at root, `.claude/settings.local.json`, OS detritus, data exports, and personal notes. `DESIGN/` brand assets remain tracked.
+- **Git Workflow section added to CLAUDE.md** documenting repo state, what is/isn't tracked, commit conventions (one logical change per commit, HEREDOC messages, stage by filename, never push without explicit ask, no `--amend`), and a pre-commit checklist.
+- **Backup of pre-scrub repo** preserved at `c:/tmp/FC_FM_backup_20260516_024519/` — safe to delete once next staff submission confirms the Script Properties wiring works end-to-end.
+
 ### Session 16 May 2026 — Asset Registry design (Phase 2)
 - Reviewed sample `OSKB_FM_ASSETS.xlsx` and existing form wiring (`data.assetId` already threads through `Webapp.js` into RAW_INTAKE col C / MANUAL_INPUT col E, but nothing reads from a registry yet)
 - **Decided: one spreadsheet, two tabs — not two files.** Avoids cross-file `IMPORTRANGE` drift when assets are renamed or deleted.
@@ -375,7 +383,7 @@ When using Python/Bash to modify files directly, the PostToolUse hook does NOT a
 ### Pending / Not Yet Done
 1. **LINE notification race condition** — **FIXED 25 Apr 2026** (patched + redeployed). Closure-local snapshots added to `onSubmitSuccess` and the event-support handler; `uploadFilesBackground` / `uploadEventFilesBackground` no longer read globals
 2. **LINE silent failures** — **FIXED 29 Apr 2026.** All failures now write to `LINE_LOG` sheet via `logLineFailure_`. Diagnostics (`lineHealthCheck`, `diagnoseLastSubmission`) added. Dedup + client-side fallback added.
-3. **Redeploy WebApp.html** — required to make the 29 Apr client-side fallback live. .gs changes already active (Apps Script always runs Head).
+3. **Redeploy WebApp.html** — required to make the 29 Apr client-side LINE fallback AND the 16 May 25 MB upload cap live. `.gs` changes are already active (Apps Script always runs Head); only HTML needs deployment.
 4. **Verify post-reset (1 May 2026)** — first staff submission after midnight 1 May JST should arrive in LINE. If not, check `LINE_LOG` for the new failure reason.
 5. **Asset Registry — provide real OSKB appliance list.** Jay to paste a list (what / where / quantity). Candidate ID schemes get rendered side-by-side. Once format is locked, build `OSKB_FM_ASSETS` spreadsheet with `ASSETS` tab + auto-generated `QR_URL` / `QR_IMAGE` columns + menu function for high-res QR export. `MAINTENANCE_LOG` and form integration follow in a second pass.
 6. **FM Dispatch `?app=dispatch` routing** — wire `FM_Dispatch.html` into `doGet()` so the production URL serves either submission form or dispatch app based on query param. ~10-line change in `Webapp.js`. Deferred until UI settles.
@@ -383,6 +391,9 @@ When using Python/Bash to modify files directly, the PostToolUse hook does NOT a
 8. **FM Dispatch UI tweaks** — Jay has a batch of edits to apply in one revision pass.
 9. **Master spreadsheet rename** — `OSKB_FM_MASTER_REQUESTS` → `FC_FM_MASTER_REQUESTS` (File → Rename in the sheet UI). Code already references the unified name.
 10. **Scrub OpenAI key from FC_FM git history** — **DONE 16 May 2026.** `git filter-repo` removed old and new keys from all commits; key migrated to Script Properties; force-pushed to origin.
+11. **Set the 5 Script Properties on the live project** — pending user action at session close.
+    Required keys: `OPENAI_API_KEY` (v3 — create fresh in OpenAI dashboard), `LINE_CHANNEL_ACCESS_TOKEN`, `LINE_GROUP_ID`, `LINE_TEST_GROUP_ID`, `LINE_EXPENSE_GROUP_ID`. The four LINE values are the existing constants from pre-scrub Config.js; OpenAI v3 is a fresh rotation. Until set, every AI translation and LINE push will throw `XXX is not set` and write a row to `LINE_LOG`. Apps Script Editor → Project Settings → Script Properties.
+12. **Rotate LINE channel access token** — pending user action. The original was on public GitHub from `eaf575b` through this morning's first force-push. LINE Developers Console → channel → Messaging API → Reissue channel access token → update the `LINE_CHANNEL_ACCESS_TOKEN` Script Property with the new value.
 11. **Expense approval section UI** — white card background not rendering correctly, needs styling fix
 12. **Voice-to-text** — approach TBD (client-side Speech API vs server-side Whisper)
 13. **Dedicated test functions** — most test functions in the CLAUDE.md table not yet built (only `testLineFlex`, `testLineFlexWithImages`, `runSystemCheck`, `lineHealthCheck`, `diagnoseLastSubmission` exist)
