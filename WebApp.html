@@ -1209,12 +1209,13 @@
     showConfirmation(result);
     showPage('page3');
 
-
-
+    // Snapshot state so resetApp() (Submit Another Request) can't wipe an in-flight chain.
+    const filesSnapshot = attachedFiles.slice();
+    const failuresSnapshot = [];
 
     // Upload files in background if any, then send LINE
-    if (attachedFiles.length > 0 && result.folderId) {
-      uploadFilesBackground(result.folderId, 0);
+    if (filesSnapshot.length > 0 && result.folderId) {
+      uploadFilesBackground(result.folderId, 0, filesSnapshot, result, failuresSnapshot);
     } else {
       // No files — send LINE notification immediately
       google.script.run.sendLineAfterUpload(result.folderId || '', result);
@@ -1234,29 +1235,30 @@
 
 
 
-  function uploadFilesBackground(folderId, idx) {
-    if (idx >= attachedFiles.length) {
-      if (uploadFailures.length > 0) {
-        const names = uploadFailures.map(f => '• ' + f).join('\n');
-        alert('⚠️ ' + uploadFailures.length + ' file(s) failed to upload:\n' + names +
+  function uploadFilesBackground(folderId, idx, files, submission, failures) {
+    if (idx >= files.length) {
+      if (failures.length > 0) {
+        const names = failures.map(f => '• ' + f).join('\n');
+        alert('⚠️ ' + failures.length + ' file(s) failed to upload:\n' + names +
               '\n\nThe request was saved, but these files did not reach Google Drive.' +
               '\n\nไฟล์บางรายการอัพโหลดไม่สำเร็จ');
       }
-      // All uploads done — send LINE notification with images
-      if (submissionData) {
-        google.script.run.sendLineAfterUpload(folderId, submissionData);
-      }
+      // LINE send is triggered server-side from uploadSingleFile on the last file.
       return;
     }
-    const f = attachedFiles[idx];
+    const f = files[idx];
+    const isLast = idx === files.length - 1;
     google.script.run
-      .withSuccessHandler(function() { uploadFilesBackground(folderId, idx + 1); })
+      .withSuccessHandler(function() { uploadFilesBackground(folderId, idx + 1, files, submission, failures); })
       .withFailureHandler(function(err) {
         console.error('Upload failed for ' + f.name + ':', err);
-        uploadFailures.push(f.name + ' — ' + (err.message || 'unknown error'));
-        uploadFilesBackground(folderId, idx + 1);
+        failures.push(f.name + ' — ' + (err.message || 'unknown error'));
+        uploadFilesBackground(folderId, idx + 1, files, submission, failures);
       })
-      .uploadSingleFile({ folderId: folderId, name: f.name, base64: f.base64, mimeType: f.mimeType });
+      .uploadSingleFile({
+        folderId: folderId, name: f.name, base64: f.base64, mimeType: f.mimeType,
+        triggerLine: isLast && submission ? { folderId: folderId, submission: submission } : null
+      });
   }
 
 
@@ -2138,8 +2140,13 @@ function roundRect(ctx, x, y, w, h, r) {
         hideLoading();
         showConfirmation(result);
         showPage('page3');
-        if (eventFiles.length > 0 && result.folderId) {
-          uploadEventFilesBackground(result.folderId, 0);
+
+        // Snapshot state so resetApp() can't wipe an in-flight chain.
+        const filesSnapshot = eventFiles.slice();
+        const failuresSnapshot = [];
+
+        if (filesSnapshot.length > 0 && result.folderId) {
+          uploadEventFilesBackground(result.folderId, 0, filesSnapshot, result, failuresSnapshot);
         } else {
           google.script.run.sendLineAfterUpload(result.folderId || '', result);
         }
@@ -2151,29 +2158,30 @@ function roundRect(ctx, x, y, w, h, r) {
 
 
 
-  function uploadEventFilesBackground(folderId, idx) {
-    if (idx >= eventFiles.length) {
-      if (uploadFailures.length > 0) {
-        const names = uploadFailures.map(f => '• ' + f).join('\n');
-        alert('⚠️ ' + uploadFailures.length + ' file(s) failed to upload:\n' + names +
+  function uploadEventFilesBackground(folderId, idx, files, submission, failures) {
+    if (idx >= files.length) {
+      if (failures.length > 0) {
+        const names = failures.map(f => '• ' + f).join('\n');
+        alert('⚠️ ' + failures.length + ' file(s) failed to upload:\n' + names +
               '\n\nThe request was saved, but these files did not reach Google Drive.' +
               '\n\nไฟล์บางรายการอัพโหลดไม่สำเร็จ');
       }
-      // All uploads done — send LINE notification with images
-      if (submissionData) {
-        google.script.run.sendLineAfterUpload(folderId, submissionData);
-      }
+      // LINE send is triggered server-side from uploadSingleFile on the last file.
       return;
     }
-    const f = eventFiles[idx];
+    const f = files[idx];
+    const isLast = idx === files.length - 1;
     google.script.run
-      .withSuccessHandler(function() { uploadEventFilesBackground(folderId, idx + 1); })
+      .withSuccessHandler(function() { uploadEventFilesBackground(folderId, idx + 1, files, submission, failures); })
       .withFailureHandler(function(err) {
         console.error('Upload failed for ' + f.name + ':', err);
-        uploadFailures.push(f.name + ' — ' + (err.message || 'unknown error'));
-        uploadEventFilesBackground(folderId, idx + 1);
+        failures.push(f.name + ' — ' + (err.message || 'unknown error'));
+        uploadEventFilesBackground(folderId, idx + 1, files, submission, failures);
       })
-      .uploadSingleFile({ folderId: folderId, name: f.name, base64: f.base64, mimeType: f.mimeType });
+      .uploadSingleFile({
+        folderId: folderId, name: f.name, base64: f.base64, mimeType: f.mimeType,
+        triggerLine: isLast && submission ? { folderId: folderId, submission: submission } : null
+      });
   }
 
 

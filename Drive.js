@@ -112,10 +112,30 @@ function uploadSingleFile(data) {
     folder.createFile(blob);
 
     Logger.log('Uploaded ' + safeName + ' to folder ' + data.folderId);
+
+    // Server-side LINE trigger on the last file — client chains are unreliable on mobile.
+    if (data.triggerLine) {
+      try {
+        sendLineAfterUpload(data.triggerLine.folderId, data.triggerLine.submission);
+        Logger.log('sendLineAfterUpload triggered server-side for ' + data.triggerLine.folderId);
+      } catch (e2) {
+        Logger.log('sendLineAfterUpload (post-upload) failed: ' + e2.message);
+      }
+    }
+
     return { success: true, fileName: safeName };
 
   } catch (e) {
     Logger.log('uploadSingleFile ERROR: ' + e.message + '\nStack: ' + e.stack);
+    // Fire LINE even if the upload itself failed — requester should still be notified.
+    if (data && data.triggerLine) {
+      try {
+        sendLineAfterUpload(data.triggerLine.folderId, data.triggerLine.submission);
+        Logger.log('sendLineAfterUpload triggered server-side despite upload failure');
+      } catch (e2) {
+        Logger.log('sendLineAfterUpload (on failure) failed: ' + e2.message);
+      }
+    }
     throw new Error('Upload failed (' + (data && data.name || 'file') + '): ' + e.message);
   }
 }
