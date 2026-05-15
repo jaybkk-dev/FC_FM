@@ -30,10 +30,13 @@ const OPENAI_URL     = 'https://api.openai.com/v1/chat/completions';
 const TEST_MODE = false;
 
 // --- LINE MESSAGING API -----------------------------------------
-const LINE_CHANNEL_ACCESS_TOKEN = 'REDACTED_LINE_TOKEN_NOW_IN_SCRIPT_PROPERTIES';
-const LINE_GROUP_ID = 'REDACTED_LINE_GROUP_ID';
-const LINE_TEST_GROUP_ID = 'REDACTED_LINE_TEST_GROUP_ID';
-const LINE_EXPENSE_GROUP_ID = 'REDACTED_LINE_EXPENSE_GROUP_ID';
+// All LINE secrets live in Script Properties (Apps Script → Project Settings →
+// Script Properties), NOT in source. Read via `getLineProp_()` in Line.js.
+// Required property names:
+//   LINE_CHANNEL_ACCESS_TOKEN  — long-lived channel access token
+//   LINE_GROUP_ID              — production OSKAR MAINTENANCE group
+//   LINE_TEST_GROUP_ID         — test group (LINE FLEX TESTS, Jay only)
+//   LINE_EXPENSE_GROUP_ID      — OSKAR MAINTENANCE EXPENSES group
 
 // --- TIMEZONE ---------------------------------------------------
 const TZ = 'Asia/Bangkok';

@@ -4,20 +4,35 @@
 // ============================================================
 
 /**
+ * Reads a LINE-related secret from Script Properties.
+ * Set these once: Apps Script → Project Settings → Script Properties.
+ * Required keys: LINE_CHANNEL_ACCESS_TOKEN, LINE_GROUP_ID,
+ * LINE_TEST_GROUP_ID, LINE_EXPENSE_GROUP_ID.
+ * Throws on missing — never falls back silently.
+ */
+function getLineProp_(name) {
+  var v = PropertiesService.getScriptProperties().getProperty(name);
+  if (!v) {
+    throw new Error(
+      name + ' is not set. Open Apps Script → Project Settings → ' +
+      'Script Properties and add ' + name + '.'
+    );
+  }
+  return v;
+}
+
+
+/**
  * Send a Flex Message notification to the venue LINE group.
  * Called from submitRequest() after the row is written.
- * Fails silently (logs error) — LINE notification should never block submission.
+ * Fails silently (writes to LINE_LOG) — LINE notification should never block submission.
  */
 function notifyLineGroup_(requestData) {
-  if (!LINE_CHANNEL_ACCESS_TOKEN) {
-    logLineFailure_(requestData, 'no access token');
-    return;
-  }
-
-  // Always use production group for real submissions
-  var groupId = LINE_GROUP_ID;
-  if (!groupId) {
-    logLineFailure_(requestData, 'no group ID configured');
+  var groupId;
+  try {
+    groupId = getLineProp_('LINE_GROUP_ID');
+  } catch (e) {
+    logLineFailure_(requestData, 'LINE config missing: ' + e.message);
     return;
   }
 
@@ -273,7 +288,7 @@ function buildFlexMessage_(data) {
  * Includes amount, justification, images, and an APPROVE button.
  */
 function sendExpenseFlexMessage_(data, imageUrls) {
-  var expGroupId = LINE_EXPENSE_GROUP_ID;
+  var expGroupId = getLineProp_('LINE_EXPENSE_GROUP_ID');
   if (!expGroupId) {
     Logger.log('LINE: expense group ID not configured');
     return;
@@ -396,7 +411,7 @@ function sendExpenseFlexMessage_(data, imageUrls) {
  * Send approval confirmation Flex to the expense group.
  */
 function sendApprovalConfirmation_(data) {
-  var expGroupId = LINE_EXPENSE_GROUP_ID;
+  var expGroupId = getLineProp_('LINE_EXPENSE_GROUP_ID');
   if (!expGroupId) return;
 
   var olive = '#606c38';
@@ -451,7 +466,7 @@ function sendLineMessage_(to, messages) {
     method: 'post',
     contentType: 'application/json',
     headers: {
-      'Authorization': 'Bearer ' + LINE_CHANNEL_ACCESS_TOKEN
+      'Authorization': 'Bearer ' + getLineProp_('LINE_CHANNEL_ACCESS_TOKEN')
     },
     payload: JSON.stringify(payload),
     muteHttpExceptions: true
@@ -543,7 +558,7 @@ function testLineFlex() {
   };
 
   // Test functions always use test group
-  var groupId = LINE_TEST_GROUP_ID;
+  var groupId = getLineProp_('LINE_TEST_GROUP_ID');
   if (!groupId) {
     Logger.log('No LINE group ID configured.');
     return;
@@ -561,7 +576,7 @@ function testLineFlex() {
  * Run from Script Editor.
  */
 function testLineFlexWithImages() {
-  var groupId = LINE_TEST_GROUP_ID;
+  var groupId = getLineProp_('LINE_TEST_GROUP_ID');
   if (!groupId) { Logger.log('No test group ID'); return; }
 
   // Read real images from the test folder
@@ -614,11 +629,9 @@ function testLineFlexWithImages() {
  * Run from Script Editor.
  */
 function sendInstallInstructions() {
-  var groupId = LINE_GROUP_ID || PropertiesService.getScriptProperties().getProperty('LINE_GROUP_ID');
-  if (!groupId) {
-    Logger.log('No LINE_GROUP_ID configured.');
-    return;
-  }
+  var groupId;
+  try { groupId = getLineProp_('LINE_GROUP_ID'); }
+  catch (e) { Logger.log('No LINE_GROUP_ID configured.'); return; }
 
   var appUrl = ScriptApp.getService().getUrl();
   var gold = '#E6A831';
@@ -749,11 +762,11 @@ function sendInstallInstructions() {
  * Result is logged AND alerted (when run from the editor) so you cannot miss it.
  */
 function lineHealthCheck() {
-  var groupId = LINE_GROUP_ID;
+  var groupId = getLineProp_('LINE_GROUP_ID');
   var url = 'https://api.line.me/v2/bot/group/' + groupId + '/summary';
   var res = UrlFetchApp.fetch(url, {
     method: 'get',
-    headers: { 'Authorization': 'Bearer ' + LINE_CHANNEL_ACCESS_TOKEN },
+    headers: { 'Authorization': 'Bearer ' + getLineProp_('LINE_CHANNEL_ACCESS_TOKEN') },
     muteHttpExceptions: true
   });
   var code = res.getResponseCode();
@@ -809,7 +822,7 @@ function diagnoseLastSubmission() {
 
   try {
     var flex = buildFlexMessage_(requestData);
-    sendLineMessage_(LINE_TEST_GROUP_ID, [flex]);
+    sendLineMessage_(getLineProp_('LINE_TEST_GROUP_ID'), [flex]);
     var msg = 'OK — last submission (' + reqId + ') replayed to TEST group. ' +
               'Pipeline is healthy. Production group is the issue — run lineHealthCheck.';
     Logger.log(msg);
