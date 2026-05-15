@@ -184,7 +184,7 @@ During import, media link columns may contain `=HYPERLINK(...)` formulas. Use `g
 - **Local path:** `c:\Users\Jay\Documents\FC_FM`
 - **Remote:** `jaybkk-dev/FC_FM` on GitHub (public)
 - **Default branch:** `master` (PRs target `main` — see git instructions in environment)
-- **History scrubbed 16 May 2026.** The old (now-rotated) OpenAI key that was committed in `885f70a` and `eaf575b` has been removed from all history via `git filter-repo --replace-text`. The current key was simultaneously moved to Script Properties (see Dependencies). All commits were force-pushed under new SHAs. GitHub push protection no longer triggers on this repo.
+- **History scrubbed 16 May 2026 (two passes).** First pass removed the rotated-out OpenAI key from `885f70a` / `eaf575b` and moved the live key to Script Properties. Second pass (same day, after a GitGuardian alert) removed the LINE channel access token + all three group IDs and moved them to Script Properties too. All commits were force-pushed under new SHAs. Going forward, every secret reaches Apps Script through a `get*Prop_()` helper that reads from `PropertiesService.getScriptProperties()`. Source is safe to push.
 
 ### What IS tracked
 
@@ -238,7 +238,11 @@ When the user asks for a commit:
 ## Dependencies
 
 - **Advanced Sheets API** must be enabled in Script Editor (Services → + → Google Sheets API) — used for filtered views
-- **OpenAI API key** lives in **Script Properties** (Apps Script → Project Settings → Script Properties → key `OPENAI_API_KEY`). Read via `getOpenAIKey_()` in AI.js — never hardcoded. Used for translation and classification. If unset, `getOpenAIKey_()` throws with a setup-instruction message.
+- **All third-party secrets live in Script Properties**, never in source. Apps Script → Project Settings → Script Properties. Required keys:
+  - `OPENAI_API_KEY` — read via `getOpenAIKey_()` in AI.js (translation, classification, approval-token signing)
+  - `LINE_CHANNEL_ACCESS_TOKEN`, `LINE_GROUP_ID`, `LINE_TEST_GROUP_ID`, `LINE_EXPENSE_GROUP_ID` — read via `getLineProp_(name)` in Line.js (Flex Messages, expense approvals, diagnostics)
+  
+  Both helpers throw with a setup-instruction message if their property is unset. **Never reintroduce literal secrets in `Config.js`** — every push will hit GitHub push protection or GitGuardian.
 - **Shared Drive** access — script owner must have write access to the shared drive
 
 ## Current Status (updated 16 May 2026)
