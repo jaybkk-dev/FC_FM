@@ -184,7 +184,7 @@ During import, media link columns may contain `=HYPERLINK(...)` formulas. Use `g
 - **Local path:** `c:\Users\Jay\Documents\FC_FM`
 - **Remote:** `jaybkk-dev/FC_FM` on GitHub (public)
 - **Default branch:** `master` (PRs target `main` — see git instructions in environment)
-- **GitHub push protection blocks new pushes** because the old OpenAI API key was committed in `885f70a` and `eaf575b` (since rotated). Pushing is gated on scrubbing those commits via `git filter-repo` + force-push — deferred. Until then, commits live locally; the GitHub mirror is stale.
+- **History scrubbed 16 May 2026.** The old (now-rotated) OpenAI key that was committed in `885f70a` and `eaf575b` has been removed from all history via `git filter-repo --replace-text`. The current key was simultaneously moved to Script Properties (see Dependencies). All commits were force-pushed under new SHAs. GitHub push protection no longer triggers on this repo.
 
 ### What IS tracked
 
@@ -238,7 +238,7 @@ When the user asks for a commit:
 ## Dependencies
 
 - **Advanced Sheets API** must be enabled in Script Editor (Services → + → Google Sheets API) — used for filtered views
-- **OpenAI API** key in Config.gs — used for translation and classification
+- **OpenAI API key** lives in **Script Properties** (Apps Script → Project Settings → Script Properties → key `OPENAI_API_KEY`). Read via `getOpenAIKey_()` in AI.js — never hardcoded. Used for translation and classification. If unset, `getOpenAIKey_()` throws with a setup-instruction message.
 - **Shared Drive** access — script owner must have write access to the shared drive
 
 ## Current Status (updated 16 May 2026)
@@ -378,7 +378,7 @@ When using Python/Bash to modify files directly, the PostToolUse hook does NOT a
 7. **FM Dispatch backend wiring** — incremental after UI settles: AUDIT_LOG sheet, PURCHASE_REQUESTS sheet, OT tracker integration, real Drive photo reads, LINE Flex on approval / payment / completion.
 8. **FM Dispatch UI tweaks** — Jay has a batch of edits to apply in one revision pass.
 9. **Master spreadsheet rename** — `OSKB_FM_MASTER_REQUESTS` → `FC_FM_MASTER_REQUESTS` (File → Rename in the sheet UI). Code already references the unified name.
-10. **Scrub OpenAI key from FC_FM git history** — `git filter-repo` + force-push on commits `885f70a` and `eaf575b`. Key already rotated; this is hygiene only.
+10. **Scrub OpenAI key from FC_FM git history** — **DONE 16 May 2026.** `git filter-repo` removed old and new keys from all commits; key migrated to Script Properties; force-pushed to origin.
 11. **Expense approval section UI** — white card background not rendering correctly, needs styling fix
 12. **Voice-to-text** — approach TBD (client-side Speech API vs server-side Whisper)
 13. **Dedicated test functions** — most test functions in the CLAUDE.md table not yet built (only `testLineFlex`, `testLineFlexWithImages`, `runSystemCheck`, `lineHealthCheck`, `diagnoseLastSubmission` exist)
