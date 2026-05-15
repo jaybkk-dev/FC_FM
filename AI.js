@@ -3,8 +3,26 @@
 // Container-bound to: FC_FM_MASTER_REQUESTS
 // ============================================================
 // All OpenAI calls go through callAI_().
-// Single API key from Config.gs.
+// API key is stored in Script Properties (NOT in source) and read via
+// getOpenAIKey_() below.
 // ============================================================
+
+
+/**
+ * Reads the OpenAI API key from Script Properties.
+ * Set it once: Apps Script → Project Settings → Script Properties → add
+ * `OPENAI_API_KEY` with the value. Never hardcode the key in source.
+ */
+function getOpenAIKey_() {
+  var k = PropertiesService.getScriptProperties().getProperty('OPENAI_API_KEY');
+  if (!k) {
+    throw new Error(
+      'OPENAI_API_KEY is not set. Open Apps Script → Project Settings → ' +
+      'Script Properties and add OPENAI_API_KEY with your key.'
+    );
+  }
+  return k;
+}
 
 
 /**
@@ -20,7 +38,7 @@ function callAI_(prompt) {
 
   const options = {
     method: 'post',
-    headers: { 'Authorization': 'Bearer ' + OPENAI_API_KEY },
+    headers: { 'Authorization': 'Bearer ' + getOpenAIKey_() },
     contentType: 'application/json',
     payload: JSON.stringify(payload),
     muteHttpExceptions: true,
@@ -98,7 +116,7 @@ function translateToThai_(text) {
     const res = UrlFetchApp.fetch(OPENAI_URL, {
       method: 'post',
       contentType: 'application/json',
-      headers: { 'Authorization': 'Bearer ' + OPENAI_API_KEY },
+      headers: { 'Authorization': 'Bearer ' + getOpenAIKey_() },
       payload: JSON.stringify({
         model: OPENAI_MODEL,
         max_tokens: 200,
@@ -129,7 +147,7 @@ function translateToEnglish_(text) {
     var res = UrlFetchApp.fetch(OPENAI_URL, {
       method: 'post',
       contentType: 'application/json',
-      headers: { 'Authorization': 'Bearer ' + OPENAI_API_KEY },
+      headers: { 'Authorization': 'Bearer ' + getOpenAIKey_() },
       payload: JSON.stringify({
         model: OPENAI_MODEL,
         max_tokens: 200,

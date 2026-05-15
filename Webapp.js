@@ -154,7 +154,7 @@ function handleApproval_(e) {
  * Simple HMAC-like hash using reqId + secret.
  */
 function generateApprovalToken_(reqId) {
-  var secret = OPENAI_API_KEY.substring(0, 16); // use first 16 chars of API key as secret
+  var secret = getOpenAIKey_().substring(0, 16); // use first 16 chars of API key as secret
   var raw = reqId + ':' + secret;
   var hash = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, raw);
   return hash.map(function(b) { return ('0' + (b & 0xFF).toString(16)).slice(-2); }).join('').substring(0, 16);

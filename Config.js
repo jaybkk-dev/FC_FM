@@ -18,7 +18,9 @@ const OWNER_EMAIL     = 'jsebag@gmail.com';
 const ASSISTANT_EMAIL = 'pao@gigibangkok.com';
 
 // --- OPENAI -----------------------------------------------------
-const OPENAI_API_KEY = 'REDACTED_OPENAI_KEY_NOW_IN_SCRIPT_PROPERTIES';
+// The API key lives in Script Properties (Apps Script → Project Settings →
+// Script Properties → `OPENAI_API_KEY`), NOT in source. Read it via
+// `getOpenAIKey_()` defined in AI.js.
 const OPENAI_MODEL   = 'gpt-4o-mini';
 const OPENAI_URL     = 'https://api.openai.com/v1/chat/completions';
 
