@@ -94,7 +94,8 @@ function uploadSingleFile(data) {
     if (!data.folderId) throw new Error('No folderId provided.');
 
     Logger.log('uploadSingleFile: folder=' + data.folderId + ', file=' + (data.name || '?') +
-               ', mimeType=' + (data.mimeType || '?') + ', base64Len=' + data.base64.length);
+               ', mimeType=' + (data.mimeType || '?') + ', base64Len=' + data.base64.length +
+               ', triggerLine=' + (data.triggerLine ? 'YES (reqId=' + (data.triggerLine.submission && data.triggerLine.submission.reqId) + ')' : 'no'));
 
     const folder = DriveApp.getFolderById(data.folderId);
 

@@ -1243,7 +1243,11 @@
               '\n\nThe request was saved, but these files did not reach Google Drive.' +
               '\n\nไฟล์บางรายการอัพโหลดไม่สำเร็จ');
       }
-      // LINE send is triggered server-side from uploadSingleFile on the last file.
+      // Server-side triggerLine on the last upload normally fires LINE. This client-side
+      // call is a fallback — server-side dedups via reqId cache so we never double-send.
+      if (submission && submission.reqId) {
+        google.script.run.sendLineAfterUpload(folderId || '', submission);
+      }
       return;
     }
     const f = files[idx];
@@ -2166,7 +2170,10 @@ function roundRect(ctx, x, y, w, h, r) {
               '\n\nThe request was saved, but these files did not reach Google Drive.' +
               '\n\nไฟล์บางรายการอัพโหลดไม่สำเร็จ');
       }
-      // LINE send is triggered server-side from uploadSingleFile on the last file.
+      // Fallback: server-side dedups via reqId cache, so this is safe.
+      if (submission && submission.reqId) {
+        google.script.run.sendLineAfterUpload(folderId || '', submission);
+      }
       return;
     }
     const f = files[idx];

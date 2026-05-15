@@ -360,6 +360,20 @@ function submitRequest(data) {
  * @param {Object} requestData - submission result from submitRequest()
  */
 function sendLineAfterUpload(folderId, requestData) {
+  // Dedup: server-side trigger (from uploadSingleFile) and client-side fallback both call this.
+  // Cache the reqId for 5 minutes — second call within window short-circuits.
+  try {
+    var cache = CacheService.getScriptCache();
+    var key = 'lineSent_' + (requestData && requestData.reqId);
+    if (requestData && requestData.reqId && cache.get(key)) {
+      Logger.log('LINE: dedup — already sent for ' + requestData.reqId);
+      return;
+    }
+    if (requestData && requestData.reqId) cache.put(key, '1', 300);
+  } catch (cacheErr) {
+    Logger.log('LINE dedup cache failed (continuing): ' + cacheErr.message);
+  }
+
   // Translate details
   requestData.detailsThai = translateToThai_(requestData.details || '');
   requestData.venueName = getVenueConfig().venueName;

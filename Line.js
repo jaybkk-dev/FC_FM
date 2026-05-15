@@ -10,14 +10,14 @@
  */
 function notifyLineGroup_(requestData) {
   if (!LINE_CHANNEL_ACCESS_TOKEN) {
-    Logger.log('LINE: skipped — no access token');
+    logLineFailure_(requestData, 'no access token');
     return;
   }
 
   // Always use production group for real submissions
   var groupId = LINE_GROUP_ID;
   if (!groupId) {
-    Logger.log('LINE: skipped — no group ID configured');
+    logLineFailure_(requestData, 'no group ID configured');
     return;
   }
 
@@ -26,7 +26,35 @@ function notifyLineGroup_(requestData) {
     sendLineMessage_(groupId, [flex]);
     Logger.log('LINE: notification sent for ' + requestData.reqId);
   } catch (e) {
-    Logger.log('LINE: notification failed — ' + e.message);
+    logLineFailure_(requestData, e.message + (e.stack ? '\n' + e.stack : ''));
+  }
+}
+
+
+/**
+ * Append a row to the LINE_LOG sheet so silent LINE failures become visible.
+ * Auto-creates the sheet on first failure. Never throws.
+ */
+function logLineFailure_(requestData, reason) {
+  Logger.log('LINE: notification failed — ' + reason);
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getSheetByName('LINE_LOG');
+    if (!sheet) {
+      sheet = ss.insertSheet('LINE_LOG');
+      sheet.getRange(1, 1, 1, 5).setValues([['TIMESTAMP', 'REQ_ID', 'TITLE', 'AUTHOR', 'REASON']]);
+      sheet.getRange(1, 1, 1, 5).setFontWeight('bold').setBackground('#E6A831').setFontColor('#FFFFFF');
+      sheet.setFrozenRows(1);
+    }
+    sheet.appendRow([
+      new Date(),
+      (requestData && requestData.reqId) || '',
+      (requestData && requestData.title) || '',
+      (requestData && requestData.author) || '',
+      String(reason || '').substring(0, 500)
+    ]);
+  } catch (logErr) {
+    Logger.log('LINE: logLineFailure_ itself failed — ' + logErr.message);
   }
 }
 
@@ -438,34 +466,6 @@ function sendLineMessage_(to, messages) {
 }
 
 
-/**
- * Unsend / recall a bot message by message ID.
- * Run from Script Editor: unsendLineMessage('MESSAGE_ID_HERE')
- */
-function unsendLineMessage(messageId) {
-  var options = {
-    method: 'post',
-    contentType: 'application/json',
-    headers: {
-      'Authorization': 'Bearer ' + LINE_CHANNEL_ACCESS_TOKEN
-    },
-    payload: JSON.stringify({ messageId: messageId }),
-    muteHttpExceptions: true
-  };
-
-  var response = UrlFetchApp.fetch('https://api.line.me/v2/bot/message/' + messageId + '/cancel', options);
-  var code = response.getResponseCode();
-  Logger.log('Unsend response: ' + code + ' — ' + response.getContentText());
-  return code;
-}
-
-
-/** Quick-run: unsend the test message. Delete this function after use. */
-function unsendTestMessage() {
-  unsendLineMessage('607707648296747575');
-}
-
-
 // ============================================================
 // SETUP HELPERS
 // ============================================================
@@ -737,4 +737,88 @@ function sendInstallInstructions() {
   Logger.log('Installation instructions sent to LINE group');
 }
 
-// pushed 1775587509
+// ============================================================
+// DIAGNOSTICS — run from Script Editor when LINE notifications go missing
+// ============================================================
+
+/**
+ * Health check: verifies the bot is still a member of LINE_GROUP_ID
+ * (the production OSKAR MAINTENANCE group). Sends NO message — uses the
+ * /group/{id}/summary endpoint, which 200s only if the bot is in the group.
+ *
+ * Result is logged AND alerted (when run from the editor) so you cannot miss it.
+ */
+function lineHealthCheck() {
+  var groupId = LINE_GROUP_ID;
+  var url = 'https://api.line.me/v2/bot/group/' + groupId + '/summary';
+  var res = UrlFetchApp.fetch(url, {
+    method: 'get',
+    headers: { 'Authorization': 'Bearer ' + LINE_CHANNEL_ACCESS_TOKEN },
+    muteHttpExceptions: true
+  });
+  var code = res.getResponseCode();
+  var body = res.getContentText();
+  var msg;
+  if (code === 200) {
+    var info = JSON.parse(body);
+    msg = 'OK — bot is in production group "' + info.groupName + '" (' + groupId + ')';
+  } else {
+    msg = 'FAIL — HTTP ' + code + ' on group ' + groupId + '\n' + body +
+          '\n\nLikely cause: bot was removed from the OSKAR MAINTENANCE group, ' +
+          'or LINE_GROUP_ID in Config.js is stale. Re-invite the FC MAINTENANCE bot ' +
+          'to that group, then re-capture the group ID via the webhook.';
+  }
+  Logger.log('lineHealthCheck: ' + msg);
+  // No alert — would hang from Script Editor. Result is in the execution log + return value.
+  return msg;
+}
+
+
+/**
+ * Replays sendLineAfterUpload for the most recent RAW_INTAKE row,
+ * but routes the Flex to LINE_TEST_GROUP_ID (NOT to staff) so we can
+ * verify the full pipeline end-to-end without spamming the maintenance group.
+ *
+ * If this succeeds → the bot is missing from the production group (run lineHealthCheck).
+ * If this fails → the bug is inside sendLineAfterUpload / buildFlexMessage_ for real data.
+ */
+function diagnoseLastSubmission() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var raw = ss.getSheetByName('RAW_INTAKE');
+  var lastRow = raw.getLastRow();
+  if (lastRow < 2) { Logger.log('No RAW_INTAKE rows.'); return; }
+
+  var row = raw.getRange(lastRow, 1, 1, 11).getValues()[0];
+  var ts = row[0], venue = row[1], reqType = row[3], area = row[4],
+      title = row[5], details = row[6], author = row[7], reqId = row[10];
+
+  var requestData = {
+    reqId: reqId,
+    title: title,
+    details: details,
+    detailsThai: translateToThai_(details || ''),
+    area: area,
+    author: author,
+    timestamp: Utilities.formatDate(ts instanceof Date ? ts : new Date(ts), TZ, 'dd/MM/yyyy HH:mm'),
+    venueName: getVenueConfig().venueName,
+    requestType: reqType,
+    folderUrl: '',
+    imageUrls: [],
+    hasVideo: false, hasAudio: false, hasPdf: false
+  };
+
+  try {
+    var flex = buildFlexMessage_(requestData);
+    sendLineMessage_(LINE_TEST_GROUP_ID, [flex]);
+    var msg = 'OK — last submission (' + reqId + ') replayed to TEST group. ' +
+              'Pipeline is healthy. Production group is the issue — run lineHealthCheck.';
+    Logger.log(msg);
+  } catch (err) {
+    var fmsg = 'FAIL — ' + err.message + '\n\nThe bug is inside buildFlexMessage_ / sendLineAfterUpload, ' +
+               'not in the LINE channel itself.';
+    Logger.log(fmsg);
+  }
+}
+
+
+// pushed 1777826500 // remove blocking alerts
