@@ -383,7 +383,7 @@ When using Python/Bash to modify files directly, the PostToolUse hook does NOT a
 ### Pending / Not Yet Done
 1. **LINE notification race condition** — **FIXED 25 Apr 2026** (patched + redeployed). Closure-local snapshots added to `onSubmitSuccess` and the event-support handler; `uploadFilesBackground` / `uploadEventFilesBackground` no longer read globals
 2. **LINE silent failures** — **FIXED 29 Apr 2026.** All failures now write to `LINE_LOG` sheet via `logLineFailure_`. Diagnostics (`lineHealthCheck`, `diagnoseLastSubmission`) added. Dedup + client-side fallback added.
-3. **Redeploy WebApp.html** — required to make the 29 Apr client-side LINE fallback AND the 16 May 25 MB upload cap live. `.gs` changes are already active (Apps Script always runs Head); only HTML needs deployment.
+3. **Redeploy WebApp.html** — **DONE 16 May 2026** (Jay). 29 Apr client-side LINE fallback and 16 May 25 MB upload cap are both live.
 4. **Verify post-reset (1 May 2026)** — first staff submission after midnight 1 May JST should arrive in LINE. If not, check `LINE_LOG` for the new failure reason.
 5. **Asset Registry — provide real OSKB appliance list.** Jay to paste a list (what / where / quantity). Candidate ID schemes get rendered side-by-side. Once format is locked, build `OSKB_FM_ASSETS` spreadsheet with `ASSETS` tab + auto-generated `QR_URL` / `QR_IMAGE` columns + menu function for high-res QR export. `MAINTENANCE_LOG` and form integration follow in a second pass.
 6. **FM Dispatch `?app=dispatch` routing** — wire `FM_Dispatch.html` into `doGet()` so the production URL serves either submission form or dispatch app based on query param. ~10-line change in `Webapp.js`. Deferred until UI settles.
@@ -391,9 +391,8 @@ When using Python/Bash to modify files directly, the PostToolUse hook does NOT a
 8. **FM Dispatch UI tweaks** — Jay has a batch of edits to apply in one revision pass.
 9. **Master spreadsheet rename** — `OSKB_FM_MASTER_REQUESTS` → `FC_FM_MASTER_REQUESTS` (File → Rename in the sheet UI). Code already references the unified name.
 10. **Scrub OpenAI key from FC_FM git history** — **DONE 16 May 2026.** `git filter-repo` removed old and new keys from all commits; key migrated to Script Properties; force-pushed to origin.
-11. **Set the 5 Script Properties on the live project** — pending user action at session close.
-    Required keys: `OPENAI_API_KEY` (v3 — create fresh in OpenAI dashboard), `LINE_CHANNEL_ACCESS_TOKEN`, `LINE_GROUP_ID`, `LINE_TEST_GROUP_ID`, `LINE_EXPENSE_GROUP_ID`. The four LINE values are the existing constants from pre-scrub Config.js; OpenAI v3 is a fresh rotation. Until set, every AI translation and LINE push will throw `XXX is not set` and write a row to `LINE_LOG`. Apps Script Editor → Project Settings → Script Properties.
-12. **Rotate LINE channel access token** — pending user action. The original was on public GitHub from `eaf575b` through this morning's first force-push. LINE Developers Console → channel → Messaging API → Reissue channel access token → update the `LINE_CHANNEL_ACCESS_TOKEN` Script Property with the new value.
+11. **Set the 5 Script Properties on the live project** — **DONE 16 May 2026** (Jay). All five (`OPENAI_API_KEY` rotated to v3, `LINE_CHANNEL_ACCESS_TOKEN`, `LINE_GROUP_ID`, `LINE_TEST_GROUP_ID`, `LINE_EXPENSE_GROUP_ID`) are set. AI translation and LINE pushes wired to PropertiesService.
+12. **Rotate LINE channel access token** — **DONE 16 May 2026** (Jay). New token issued via LINE Developers Console; Script Property updated. The pre-scrub leak window is closed.
 11. **Expense approval section UI** — white card background not rendering correctly, needs styling fix
 12. **Voice-to-text** — approach TBD (client-side Speech API vs server-side Whisper)
 13. **Dedicated test functions** — most test functions in the CLAUDE.md table not yet built (only `testLineFlex`, `testLineFlexWithImages`, `runSystemCheck`, `lineHealthCheck`, `diagnoseLastSubmission` exist)
