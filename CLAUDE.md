@@ -173,8 +173,67 @@ During import, media link columns may contain `=HYPERLINK(...)` formulas. Use `g
 
 ## Hooks (automatic actions — configured in .claude/settings.json)
 
-- **Auto-push:** Every time a `.gs` or `.html` file is written/edited, `clasp push` runs automatically. No manual step needed.
-- **Auto-update status:** When a conversation ends, Claude is prompted to update the "Current Status" section of this CLAUDE.md file with what was done and what's still pending. This is how session memory is preserved.
+- **PostToolUse — auto-push:** Every time a `.gs` or `.html` file is written/edited, `clasp push --force` runs automatically. No manual step needed for code changes. Note: only fires for Edit/Write tool calls; direct Python/Bash file writes do NOT trigger it — run `clasp push --force` manually after such operations.
+- **SessionStart — clasp auth check:** Runs `clasp deployments` silently at the start of each Claude Code session. If clasp can't reach Apps Script (expired OAuth / `invalid_grant` / `invalid_rapt`), injects a "Run `clasp.cmd login`" warning into context. Closes a feedback loop where the auto-push had been failing silently for hours due to expired tokens. (Does NOT catch mid-session expirations.)
+- **Stop hook — removed.** Previously prompted Claude to update CLAUDE.md's Current Status at conversation end. Was re-arguing the same point relentlessly. Status is now updated on explicit request.
+
+## Git Workflow
+
+### Repo
+
+- **Local path:** `c:\Users\Jay\Documents\FC_FM`
+- **Remote:** `jaybkk-dev/FC_FM` on GitHub (public)
+- **Default branch:** `master` (PRs target `main` — see git instructions in environment)
+- **GitHub push protection blocks new pushes** because the old OpenAI API key was committed in `885f70a` and `eaf575b` (since rotated). Pushing is gated on scrubbing those commits via `git filter-repo` + force-push — deferred. Until then, commits live locally; the GitHub mirror is stale.
+
+### What IS tracked
+
+- All `.js` / `.gs` source files at the repo root
+- `WebApp.html` and `FM_Dispatch.html`
+- `CLAUDE.md`, `DESIGN.md`, `SESSION_SUMMARY.txt`, `Asset Registry - design notes.txt`
+- `DESIGN/` brand assets (logos, hex art, brochure PDFs — these are reference materials, not screenshots)
+- `.claude/settings.json` (shared hook + permission config)
+- `.mcp.json` (MCP server registration)
+- `.gitignore`
+
+### What is NOT tracked (see `.gitignore`)
+
+- `.claude/settings.local.json` — per-machine permission overrides
+- Root-level `*.png`, `*.jpg`, `*.jpeg` — ad-hoc screenshots and reference images. `DESIGN/` images are exempt (only root-level images are ignored).
+- `VISUAL HELP/` — screenshot folder
+- `OSKB_FM_ASSETS.xlsx` and `*_md_table.txt` — sample data and data exports, not source of truth
+- Personal notes: `FM_Dispatch.txt`, `FUTURE DEVELOPMENTS FROM OLDER HANDOFFS.txt`, `Handling App.md`, `New APPROVAL REQUEST feature.txt`
+- `desktop.ini`, `.DS_Store`, `Thumbs.db`
+
+### Commit conventions
+
+- **Commit only when explicitly asked.** Claude does not auto-commit. The auto-push hook pushes to Apps Script (clasp), not to git. Git commits are intentional checkpoints.
+- **One commit per logical change.** If a session touches multiple unrelated areas (e.g. LINE work + a UI fix + tooling), split into separate commits so `git log` reads cleanly. For interleaved-file changes, temporarily revert the unrelated hunks, commit, then re-apply — never bundle "all current changes" into one commit when they belong to distinct themes.
+- **Message style** — short title (≤70 chars), then a body that explains the WHY (not the what — diff already shows that). Body lines wrap at ~78 chars. End every commit message with the Co-Authored-By trailer.
+- **Use HEREDOC for multi-line messages** to preserve formatting:
+  ```bash
+  git commit -m "$(cat <<'EOF'
+  Short title here
+
+  Why this change. What problem it solves. Any decisions worth recording.
+
+  Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
+  EOF
+  )"
+  ```
+- **Stage by filename**, not `git add -A` or `git add .` — avoids accidentally committing secrets, .env files, or ignored noise that slipped through.
+- **Never `git push` without explicit user request.** GitHub push protection will likely reject anyway until the OpenAI-key history scrub is done.
+- **Never use `--no-verify`, `--no-gpg-sign`, or `--amend`** on commits unless explicitly asked. New commits are always preferable to amended ones — pre-commit hooks that fail mean the commit didn't happen, and `--amend` would modify the previous (unrelated) commit instead.
+
+### Pre-commit checklist
+
+When the user asks for a commit:
+1. `git status --short` — sanity-check what's staged and what's not.
+2. `git diff --stat HEAD` — confirm the scope matches the intent.
+3. Inspect any newly-added file paths before staging (no secrets, no .env, no large binaries unless intentional).
+4. Stage by filename. Split into multiple commits if scope is mixed.
+5. Commit with HEREDOC message.
+6. `git log --oneline -5` to verify.
 
 ## Dependencies
 

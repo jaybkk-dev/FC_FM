@@ -1,0 +1,24 @@
+# Machine-specific Claude Code permissions (per-clone, do not share)
+.claude/settings.local.json
+
+# OS detritus
+desktop.ini
+.DS_Store
+Thumbs.db
+
+# Screenshots and ad-hoc images at the repo root.
+# DESIGN/ keeps its committed brand assets — only root-level images are ignored.
+/*.png
+/*.jpg
+/*.jpeg
+/VISUAL HELP/
+
+# Data exports and binary spreadsheet samples (not source of truth)
+/*_md_table.txt
+/OSKB_FM_ASSETS.xlsx
+
+# Personal notes and handoff drafts (kept locally, not part of the project)
+/FM_Dispatch.txt
+/FUTURE DEVELOPMENTS FROM OLDER HANDOFFS.txt
+/Handling App.md
+/New APPROVAL REQUEST feature.txt
