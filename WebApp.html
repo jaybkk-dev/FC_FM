@@ -739,6 +739,14 @@
         </div>
       </div>
     </div>
+    <!-- JAY-only quick LINE test (sends a tiny TEST Flex to the production group) -->
+    <div id="jayTestRow" style="display:none; margin-top:12px; text-align:center;">
+      <button type="button" onclick="sendLineTest()" style="background:none; border:1px dashed var(--gray); border-radius:8px; padding:8px 16px; font-size:13px; color:var(--gray); cursor:pointer;">
+        🧪 Test LINE
+      </button>
+      <div id="jayTestStatus" style="font-size:12px; color:var(--gray); margin-top:6px; min-height:16px;"></div>
+    </div>
+
     <div class="spacer"></div>
     <button id="btnNext" class="btn-primary" disabled onclick="goToPage2()">NEXT / ถัดไป</button>
 
@@ -1025,6 +1033,9 @@
     const isSenior = venueConfig && venueConfig.seniorUsers && venueConfig.seniorUsers.indexOf(name) >= 0;
     document.getElementById('adminToggle').style.display = isSenior ? 'block' : 'none';
     if (!isSenior) document.getElementById('adminPanel').style.display = 'none';
+    // Show JAY-only LINE test button
+    document.getElementById('jayTestRow').style.display = (name === 'JAY') ? 'block' : 'none';
+    document.getElementById('jayTestStatus').textContent = '';
   });
   function selectJobType(btn) {
     document.querySelectorAll('.job-type-btn').forEach(b => b.classList.remove('selected'));
@@ -1035,6 +1046,30 @@
   function checkPage1() {
     document.getElementById('btnNext').disabled = !(document.getElementById('staffName').value && selectedJobType);
   }
+
+  // JAY-only: ping the production LINE group with a tiny TEST Flex.
+  // Status updates inline below the button — no popups.
+  function sendLineTest() {
+    const status = document.getElementById('jayTestStatus');
+    status.style.color = 'var(--gray)';
+    status.textContent = 'Sending…';
+    google.script.run
+      .withSuccessHandler(function(result) {
+        if (result && result.ok) {
+          status.style.color = '#606c38';
+          status.textContent = '✅ Sent at ' + result.time;
+        } else {
+          status.style.color = '#C0392B';
+          status.textContent = '❌ Failed: ' + ((result && result.error) || 'unknown');
+        }
+      })
+      .withFailureHandler(function(err) {
+        status.style.color = '#C0392B';
+        status.textContent = '❌ Failed: ' + ((err && err.message) || 'unknown');
+      })
+      .sendLineTestFromApp();
+  }
+
   function goToPage2() {
     const name = document.getElementById('staffName').value;
     if (!name || !selectedJobType) return;

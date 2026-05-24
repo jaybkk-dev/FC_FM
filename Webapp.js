@@ -354,6 +354,46 @@ function submitRequest(data) {
 // ============================================================
 
 /**
+ * JAY-only quick test: send a minimal "THIS IS A TEST" Flex card to the
+ * production LINE group. Wired to the 🧪 Test LINE button on Page 1.
+ * Returns { ok: true, time: 'HH:MM' } or { ok: false, error: '...' }.
+ * Errors are swallowed and returned, never thrown — keeps the inline
+ * status UI predictable.
+ */
+function sendLineTestFromApp() {
+  try {
+    var flex = {
+      type: 'flex',
+      altText: 'THIS IS A TEST',
+      contents: {
+        type: 'bubble',
+        size: 'kilo',
+        header: {
+          type: 'box',
+          layout: 'vertical',
+          backgroundColor: '#E6A831',
+          paddingAll: 'md',
+          contents: [{
+            type: 'text',
+            text: '🧪 THIS IS A TEST',
+            color: '#FFFFFF',
+            weight: 'bold',
+            size: 'md',
+            align: 'center'
+          }]
+        }
+      }
+    };
+    sendLineMessage_(getLineProp_('LINE_GROUP_ID'), [flex]);
+    return { ok: true, time: Utilities.formatDate(new Date(), TZ, 'HH:mm') };
+  } catch (e) {
+    Logger.log('sendLineTestFromApp failed: ' + e.message);
+    return { ok: false, error: e.message };
+  }
+}
+
+
+/**
  * Send LINE Flex Message with image thumbnails from the job folder.
  * Called from client after all uploads finish (or immediately if no files).
  * @param {string} folderId - Drive folder ID containing uploaded files
